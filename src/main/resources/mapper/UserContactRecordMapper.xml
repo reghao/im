@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.UserContactRecordMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into user_contact_record
+        (`id`,`deleted`,`create_time`,`update_time`,`request_user_id`,`added_user_id`,`friend_status`,`friend_apply`,`remark`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{requestUserId},#{addedUserId},#{friendStatus},#{friendApply},#{remark})
+    </insert>
+
+    <update id="updateSetAccept">
+        update user_contact_record set friend_status=2,friend_apply=2
+        where request_user_id=#{requestUserId} and added_user_id=#{addedUserId}
+    </update>
+    
+    <select id="findByFriendId" resultType="cn.reghao.im.model.po.UserContactRecord">
+        select * from user_contact_record where added_user_id=#{addedUserId}
+    </select>
+    <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.po.UserContactRecord">
+        select * from user_contact_record where request_user_id=#{userId} and added_user_id=#{friendId}
+    </select>
+    <select id="countFriendApply" resultType="java.lang.Integer">
+        select count(*) from user_contact_record where friend_apply=1 and added_user_id=#{addedUserId}
+    </select>
+    <select id="findByFriendId1" resultType="cn.reghao.im.model.vo.contact.ContactApplyInfo">
+        select userProfile.user_id as id,date_format(addRequest.create_time, '%Y-%m-%d %H:%i:%s') as createdAt,addRequest.added_user_id,addRequest.remark,
+               userProfile.user_id,userProfile.avatar,userProfile.nickname
+        from user_contact_record addRequest
+        inner join user_profile userProfile
+        on userProfile.user_id=addRequest.request_user_id and addRequest.friend_apply=1 and addRequest.added_user_id=#{addedUserId}
+    </select>
+</mapper>

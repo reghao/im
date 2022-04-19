@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.UserContactMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into user_contact
+        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`friend_id`,`nickname_remark`,`friend_status`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{friendId},#{nicknameRemark},#{friendStatus})
+    </insert>
+    
+    <select id="findByUserId" resultType="cn.reghao.im.model.vo.contact.ContactInfo">
+        select contact.friend_id as id, account.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        from user_contact contact
+        inner join user_profile userProfile
+        inner join user_account account
+        on contact.friend_id=userProfile.user_id and userProfile.user_id=account.user_id and contact.user_id=#{userId}
+    </select>
+    <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.vo.contact.ContactInfo">
+        select contact.friend_id as id, account.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        from user_contact contact
+                 inner join user_profile userProfile
+                 inner join user_account account
+                            on contact.friend_id=userProfile.user_id and userProfile.user_id=account.user_id and contact.user_id=#{userId}
+    </select>
+</mapper>

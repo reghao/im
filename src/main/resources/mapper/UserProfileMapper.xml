@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.UserProfileMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into user_profile
+        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`gender`,`motto`,`avatar`,`nickname_remark`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{gender},#{motto},#{avatar},#{nicknameRemark})
+    </insert>
+    
+    <select id="findByMobile" resultType="cn.reghao.im.model.po.UserProfile">
+        select * from user_profile userProfile
+        inner join user_account userAccount
+        on userProfile.user_id=userAccount.user_id and userAccount.mobile=#{mobile}
+    </select>
+    <select id="findByUserId" resultType="cn.reghao.im.model.po.UserProfile">
+        select * from user_profile where user_id=#{userId}
+    </select>
+    <select id="findUserInfoByUserId" resultType="cn.reghao.im.model.vo.user.UserInfo">
+        select user_id as uid,nickname,gender,motto,avatar from user_profile where user_id=#{userId}
+    </select>
+</mapper>
