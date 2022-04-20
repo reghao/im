@@ -12,6 +12,6 @@ import java.util.List;
  */
 @Mapper
 public interface ChatDialogMapper extends BaseMapper<ChatDialog> {
-    ChatDialog findBySenderAndReceiverId(long senderId, long receiverId);
-    List<ChatDialog> findBySenderId(long senderId);
+    ChatDialog findByReceiverAndUserId(long receiverId, long userId);
+    List<ChatDialog> findByUserId(long userId);
 }

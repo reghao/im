@@ -1,8 +1,10 @@
 package cn.reghao.im.controller;
 
+import cn.reghao.im.db.mapper.ChatDialogMapper;
 import cn.reghao.im.db.mapper.TextMessageMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
 import cn.reghao.im.model.dto.message.*;
+import cn.reghao.im.model.po.ChatDialog;
 import cn.reghao.im.model.po.TextMessage;
 import cn.reghao.im.model.vo.message.VoteMsgResult;
 import cn.reghao.im.model.vo.user.UserInfo;
@@ -28,34 +30,39 @@ import java.io.IOException;
 public class ChatMsgController {
     private final WebSocketHandlerImpl webSocketHandler;
     private final UserProfileMapper userProfileMapper;
-    private TextMessageMapper textMessageMapper;
+    private final ChatDialogMapper chatDialogMapper;
+    private final TextMessageMapper textMessageMapper;
 
     public ChatMsgController(WebSocketHandlerImpl webSocketHandler, UserProfileMapper userProfileMapper,
-                             TextMessageMapper textMessageMapper) {
+                             ChatDialogMapper chatDialogMapper, TextMessageMapper textMessageMapper) {
         this.webSocketHandler = webSocketHandler;
         this.userProfileMapper = userProfileMapper;
+        this.chatDialogMapper = chatDialogMapper;
         this.textMessageMapper = textMessageMapper;
     }
 
     @ApiOperation(value = "发送文本消息")
     @PostMapping(value = "/message/text", produces = MediaType.APPLICATION_JSON_VALUE)
     public String talkMessageText(@RequestBody TextMsg textMsg) throws IOException {
-        long senderId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long receiverId = textMsg.getReceiverId();
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        long chatId = chatDialog.getChatId();
+
         int talkType = textMsg.getTalkType();
         String text = textMsg.getText();
 
-        TextMessage textMessage = new TextMessage(talkType, senderId, receiverId, text);
+        TextMessage textMessage = new TextMessage(chatId, userId, text);
         textMessageMapper.save(textMessage);
 
-        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(senderId);
-        TalkEvtMsg talkEvtMsg = new TalkEvtMsg(textMessage, userInfo.getNickname(), userInfo.getAvatar());
-        Talk talk = new Talk(senderId, receiverId, talkType);
+        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
+        TalkEvtMsg talkEvtMsg = new TalkEvtMsg(textMessage, userInfo.getNickname(), userInfo.getAvatar(), 1, 0);
+        Talk talk = new Talk(userId, receiverId, talkType);
         talk.setData(talkEvtMsg);
 
         WsMsg<Talk> wsMsg = new WsMsg<>(ImEvent.event_talk, talk);
         webSocketHandler.sendMessage(receiverId, wsMsg);
-        webSocketHandler.sendMessage(senderId, wsMsg);
+        webSocketHandler.sendMessage(userId, wsMsg);
         return WebResult.success();
     }
 

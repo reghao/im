@@ -4,12 +4,13 @@
 <mapper namespace="cn.reghao.im.db.mapper.TextMessageMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into text_message
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_type`,`sender_id`,`receiver_id`,`create_at`,`text`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`sender_id`,`create_at`,`text`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatType},#{senderId},#{receiverId},#{createAt},#{text})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{senderId},#{createAt},#{text})
     </insert>
     
-    <select id="findBySenderAndReceiverId" resultType="cn.reghao.im.model.po.TextMessage">
-        select * from text_message where sender_id=#{senderId} and receiver_id=#{receiverId}
+    <select id="findByChatId" resultType="cn.reghao.im.model.po.TextMessage">
+        select * from text_message where chat_id=#{chatId} and id>#{lastRecordId}
+        order by id limit #{limit}
     </select>
 </mapper>

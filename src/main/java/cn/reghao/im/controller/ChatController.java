@@ -1,12 +1,14 @@
 package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.ChatDialogMapper;
+import cn.reghao.im.db.mapper.ChatMapper;
 import cn.reghao.im.db.mapper.TextMessageMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
 import cn.reghao.im.model.dto.ChatDisturb;
 import cn.reghao.im.model.dto.ChatInitial;
 import cn.reghao.im.model.dto.ClearUnreadChat;
 import cn.reghao.im.model.dto.GetChatRecord;
+import cn.reghao.im.model.po.Chat;
 import cn.reghao.im.model.po.ChatDialog;
 import cn.reghao.im.model.po.TextMessage;
 import cn.reghao.im.model.vo.chat.ChatDialogVo;
@@ -30,12 +32,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/talk")
 public class ChatController {
+    private final ChatMapper chatMapper;
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
-    private TextMessageMapper textMessageMapper;
+    private final TextMessageMapper textMessageMapper;
 
-    public ChatController(ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
+    public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
                           TextMessageMapper textMessageMapper) {
+        this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.userProfileMapper = userProfileMapper;
         this.textMessageMapper = textMessageMapper;
@@ -46,35 +50,53 @@ public class ChatController {
     public String talkCreate(@RequestBody ChatInitial chatInitial) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long receiverId = chatInitial.getReceiverId();
-        int talkType = chatInitial.getTalkType();
-        ChatDialog chatDialog = chatDialogMapper.findBySenderAndReceiverId(userId, receiverId);
-        if (chatDialog == null) {
-            chatDialog = new ChatDialog(talkType, userId, receiverId);
-            int chatId = chatDialogMapper.save(chatDialog);
-            chatDialog.setId(chatId);
-        }
+        int chatType = chatInitial.getTalkType();
+        if (chatType == 1) {
+            ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+            if (chatDialog == null) {
+                Chat chat = new Chat(chatType);
+                int chatId = chatMapper.save(chat);
 
-        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
-        ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
-        return WebResult.success(chatDialogVo);
+                chatDialog = new ChatDialog(chatId, chatType, receiverId, userId);
+                ChatDialog chatDialog1 = new ChatDialog(chatId, chatType, userId, receiverId);
+
+                chatDialogMapper.save(chatDialog);
+                chatDialogMapper.save(chatDialog1);
+                chatDialog.setId(chatId);
+            }
+
+            UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
+            ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
+            return WebResult.success(chatDialogVo);
+        } else if (chatType == 2) {
+            return WebResult.success("待实现");
+        } else {
+            return WebResult.failWithMsg("chatType 错误");
+        }
     }
 
     @ApiOperation(value = "获取与联系人的聊天记录")
     @GetMapping(value = "/records", produces = MediaType.APPLICATION_JSON_VALUE)
     public String talkRecords(@RequestParam("record_id") long recordId, @RequestParam("receiver_id") long receiverId,
-                              @RequestParam("talk_type") int talkType, @RequestParam("limit") int limit) {
-        long senderId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        List<TextMessage> textMessages = textMessageMapper.findBySenderAndReceiverId(senderId, receiverId);
+                              @RequestParam("talk_type") int chatType, @RequestParam("limit") int limit) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        long chatId = chatDialog.getChatId();
+        List<TextMessage> textMessages = textMessageMapper.findByChatId(chatId, recordId, limit);
 
-        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(senderId);
+        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
         String nickname = userInfo.getNickname();
         String avatar = userInfo.getAvatar();
-        List<ChatRecord> list = textMessages.stream().map(textMessage -> new ChatRecord(textMessage, nickname, avatar))
+        List<ChatRecord> list = textMessages.stream().map(textMessage -> new ChatRecord(textMessage, nickname, avatar, 1, 0))
                 .collect(Collectors.toList());
         ChatRecordList chatRecordList = new ChatRecordList();
         chatRecordList.setRows(list);
-        chatRecordList.setRecordId(1);
-        chatRecordList.setLimit(textMessages.size());
+        if (list.isEmpty()) {
+            chatRecordList.setRecordId(0);
+        } else {
+            chatRecordList.setRecordId(list.get(list.size()-1).getId());
+        }
+        chatRecordList.setLimit(limit);
         return WebResult.success(chatRecordList);
     }
 
@@ -94,11 +116,12 @@ public class ChatController {
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public String talkList() {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        List<ChatDialog> list = chatDialogMapper.findBySenderId(userId);
+        List<ChatDialog> list = chatDialogMapper.findByUserId(userId);
+
         List<ChatDialogVo> list1 = list.stream().map(chatDialog -> {
             long receiverId = chatDialog.getReceiverId();
             UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
-            return new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
+            return new ChatDialogVo(chatDialog, userInfo.getNickname(), "", userInfo.getAvatar());
         }).collect(Collectors.toList());
         return WebResult.success(list1);
     }

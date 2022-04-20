@@ -24,11 +24,11 @@ public class ChatRecord {
     private String avatar;
     private String createdAt;
 
-    public ChatRecord(TextMessage textMessage, String nickname, String avatar) {
+    public ChatRecord(TextMessage textMessage, String nickname, String avatar, int talkType, long receiverId) {
         this.id = textMessage.getId();
-        this.talkType = textMessage.getChatType();
+        this.talkType = talkType;
         this.userId = textMessage.getSenderId();
-        this.receiverId = textMessage.getReceiverId();
+        this.receiverId = receiverId;
         this.msgType = 1;
         this.content = textMessage.getText();
         this.isMark = true;

@@ -4,15 +4,15 @@
 <mapper namespace="cn.reghao.im.db.mapper.ChatDialogMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into chat_dialog
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_type`,`is_disturb`,`is_online`,`is_robot`,`is_top`,`sender_id`,`receiver_id`,`unread_num`,`update_at`,`msg_text`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`is_disturb`,`is_online`,`is_robot`,`is_top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatType},#{isDisturb},#{isOnline},#{isRobot},#{isTop},#{senderId},#{receiverId},#{unreadNum},#{updateAt},#{msgText})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{isDisturb},#{isOnline},#{isRobot},#{isTop},#{userId},#{unreadNum},#{lastSendUserId},#{updateAt},#{msgText})
     </insert>
-    
-    <select id="findBySenderAndReceiverId" resultType="cn.reghao.im.model.po.ChatDialog">
-        select * from chat_dialog where sender_id=#{senderId} and receiver_id=#{receiverId}
+
+    <select id="findByReceiverAndUserId" resultType="cn.reghao.im.model.po.ChatDialog">
+        select * from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}
     </select>
-    <select id="findBySenderId" resultType="cn.reghao.im.model.po.ChatDialog">
-        select * from chat_dialog where sender_id=#{senderId}
+    <select id="findByUserId" resultType="cn.reghao.im.model.po.ChatDialog">
+        select * from chat_dialog where user_id=#{userId}
     </select>
 </mapper>

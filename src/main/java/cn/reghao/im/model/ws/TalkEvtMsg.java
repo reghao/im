@@ -23,10 +23,10 @@ public class TalkEvtMsg {
     private String groupName;
     private String groupAvatar;
 
-    public TalkEvtMsg(TextMessage textMessage, String nickname, String avatar) {
-        this.talkType = textMessage.getChatType();
+    public TalkEvtMsg(TextMessage textMessage, String nickname, String avatar, int talkType, long receiverId) {
+        this.talkType = talkType;
         this.userId = textMessage.getSenderId();
-        this.receiverId = textMessage.getReceiverId();
+        this.receiverId = receiverId;
         this.msgType = 1;
         this.content = textMessage.getText();
         this.createdAt = DateTimeConverter.format(textMessage.getCreateAt());
