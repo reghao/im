@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.ChatRecordMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into chat_record
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`sender_id`,`msg_type`,`is_mark`,`is_read`,`is_revoke`,`create_at`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{senderId},#{msgType},#{isMark},#{isRead},#{isRevoke},#{createAt})
+    </insert>
+
+    <select id="findByChatId" resultType="cn.reghao.im.model.po.ChatRecord">
+        select * from chat_record where chat_id=#{chatId} and id>#{lastRecordId}
+        order by id desc
+        limit #{limit}
+    </select>
+</mapper>

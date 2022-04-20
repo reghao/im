@@ -1,22 +1,20 @@
 package cn.reghao.im.controller;
 
-import cn.reghao.im.db.mapper.ChatDialogMapper;
-import cn.reghao.im.db.mapper.ChatMapper;
-import cn.reghao.im.db.mapper.TextMessageMapper;
-import cn.reghao.im.db.mapper.UserProfileMapper;
+import cn.reghao.im.db.mapper.*;
+import cn.reghao.im.model.constant.MsgType;
 import cn.reghao.im.model.dto.ChatDisturb;
 import cn.reghao.im.model.dto.ChatInitial;
 import cn.reghao.im.model.dto.ClearUnreadChat;
 import cn.reghao.im.model.dto.GetChatRecord;
-import cn.reghao.im.model.po.Chat;
-import cn.reghao.im.model.po.ChatDialog;
-import cn.reghao.im.model.po.TextMessage;
+import cn.reghao.im.model.po.*;
 import cn.reghao.im.model.vo.chat.ChatDialogVo;
-import cn.reghao.im.model.vo.chat.ChatRecord;
+import cn.reghao.im.model.vo.chat.ChatRecordVo;
 import cn.reghao.im.model.vo.chat.ChatRecordList;
+import cn.reghao.im.model.vo.message.FileMsgResult;
 import cn.reghao.im.model.vo.user.UserInfo;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.util.Jwt;
+import cn.reghao.jutil.jdk.converter.DateTimeConverter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -35,14 +33,18 @@ public class ChatController {
     private final ChatMapper chatMapper;
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
+    private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
+    private final FileMessageMapper fileMessageMapper;
 
     public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
-                          TextMessageMapper textMessageMapper) {
+                          ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper, FileMessageMapper fileMessageMapper) {
         this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.userProfileMapper = userProfileMapper;
+        this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
+        this.fileMessageMapper = fileMessageMapper;
     }
 
     @ApiOperation(value = "创建聊天窗口")
@@ -82,13 +84,28 @@ public class ChatController {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
-        List<TextMessage> textMessages = textMessageMapper.findByChatId(chatId, recordId, limit);
+        List<ChatRecord> chatRecords = chatRecordMapper.findByChatId(chatId, recordId, limit);
 
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
         String nickname = userInfo.getNickname();
         String avatar = userInfo.getAvatar();
-        List<ChatRecord> list = textMessages.stream().map(textMessage -> new ChatRecord(textMessage, nickname, avatar, 1, 0))
-                .collect(Collectors.toList());
+        List<ChatRecordVo> list = chatRecords.stream()
+                .map(chatRecord -> {
+                    ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+                    long recordId1 = chatRecord.getId();
+                    int msgType = chatRecord.getMsgType();
+                    if (msgType == MsgType.text.getCode()) {
+                        TextMessage textMessage = textMessageMapper.findByRecordId(recordId1);
+                        chatRecordVo.setContent(textMessage.getContent());
+                    } else if (msgType == MsgType.media.getCode()) {
+                        FileMessage fileMessage = fileMessageMapper.findByRecordId(recordId1);
+                        long senderId = chatRecord.getSenderId();
+                        String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
+                        chatRecordVo.setFile(new FileMsgResult(fileMessage, senderId, createAt));
+                    }
+                    return chatRecordVo;
+                }).collect(Collectors.toList());
+
         ChatRecordList chatRecordList = new ChatRecordList();
         chatRecordList.setRows(list);
         if (list.isEmpty()) {
@@ -143,7 +160,7 @@ public class ChatController {
     @GetMapping(value = "/records/history", produces = MediaType.APPLICATION_JSON_VALUE)
     public String talkRecordsHistory(GetChatRecord getChatRecord) {
         ChatRecordList chatRecordList = new ChatRecordList();
-        List<ChatRecord> list = new ArrayList<>();
+        List<ChatRecordVo> list = new ArrayList<>();
         chatRecordList.setRows(list);
         chatRecordList.setRecordId(1);
         chatRecordList.setLimit(100);

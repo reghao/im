@@ -1,4 +1,4 @@
-package cn.reghao.im.ws.msg;
+package cn.reghao.im.model.ws;
 
 import lombok.Getter;
 

@@ -12,5 +12,5 @@ import java.util.List;
 public class ChatRecordList {
     private int recordId;
     private int limit;
-    private List<ChatRecord> rows;
+    private List<ChatRecordVo> rows;
 }

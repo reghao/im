@@ -13,15 +13,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 public class TextMessage extends BaseObject<Integer> {
-    private long chatId;
-    private long senderId;
-    private String text;
-    private LocalDateTime createAt;
+    private long recordId;
+    private String content;
 
-    public TextMessage(long chatId, long senderId, String text) {
-        this.chatId = chatId;
-        this.senderId = senderId;
-        this.text = text;
-        this.createAt = LocalDateTime.now();
+    public TextMessage(long recordId, String content) {
+        this.recordId = recordId;
+        this.content = content;
     }
 }

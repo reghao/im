@@ -1,11 +1,8 @@
 package cn.reghao.im.ws;
 
-import cn.reghao.im.model.ws.LoginEvtMsg;
 import cn.reghao.jutil.jdk.serializer.JsonConverter;
 import cn.reghao.im.util.Jwt;
-import cn.reghao.im.ws.msg.ImEvent;
-import cn.reghao.im.ws.msg.TalkKeyboard;
-import cn.reghao.im.ws.msg.WsMsg;
+import cn.reghao.im.model.constant.EventType;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -25,14 +22,16 @@ import java.util.Map;
 @Slf4j
 @Component
 public class WebSocketHandlerImpl implements WebSocketHandler {
-    private final Map<String, WebSocketSession> map = new HashMap<>();
+    private final Map<String, WebSocketSession> sessionMap = new HashMap<>();
     private final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
     public void sendMessage(long userId, Object payload) throws IOException {
-        WebSocketSession session = map.get(String.valueOf(userId));
-        TextMessage textMessage = new TextMessage(gson.toJson(payload));
-        session.sendMessage(textMessage);
+        WebSocketSession session = sessionMap.get(String.valueOf(userId));
+        if (session != null) {
+            TextMessage textMessage = new TextMessage(gson.toJson(payload));
+            session.sendMessage(textMessage);
+        }
     }
 
     @Override
@@ -40,18 +39,10 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         String query = webSocketSession.getUri().getQuery();
         String token = query.replace("token=", "");
         String userId = Jwt.parse(token).getUserId();
-        map.put(userId, webSocketSession);
-        loginEvent(Long.parseLong(userId), webSocketSession);
+        sessionMap.put(userId, webSocketSession);
         log.info("WebSocket 建立连接");
     }
-
-    private void loginEvent(long userId, WebSocketSession webSocketSession) throws IOException {
-        LoginEvtMsg loginEvtMsg = new LoginEvtMsg(userId, true);
-        WsMsg<LoginEvtMsg> wsMsg = new WsMsg<>(ImEvent.event_login, loginEvtMsg);
-        TextMessage textMessage = new TextMessage(gson.toJson(wsMsg));
-        webSocketSession.sendMessage(textMessage);
-    }
-
+    
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) throws IOException {
         if (webSocketMessage instanceof TextMessage) {
@@ -71,12 +62,9 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     private void dispatchEvent(WebSocketSession session, String payload) throws IOException {
         JsonObject jsonObject = JsonConverter.jsonToJsonElement(payload).getAsJsonObject();
         String event = jsonObject.get("event").getAsString();
-        switch (ImEvent.valueOf(event)) {
+        switch (EventType.valueOf(event)) {
             case heartbeat:
                 log.info("heartbeat event");
-                WsMsg<String> wsMsg = new WsMsg<>(ImEvent.heartbeat, "");
-                TextMessage textMessage = new TextMessage(gson.toJson(wsMsg));
-                session.sendMessage(textMessage);
                 break;
             case event_login:
                 log.info("login event");
@@ -88,11 +76,6 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
                 log.info("talk_keyboard event");
                 long senderId = jsonObject.get("data").getAsJsonObject().get("sender_id").getAsLong();
                 long receiverId = jsonObject.get("data").getAsJsonObject().get("receiver_id").getAsLong();
-                TalkKeyboard talkKeyboard = new TalkKeyboard(senderId, receiverId);
-
-                WsMsg<TalkKeyboard> wsMsg1 = new WsMsg<>(ImEvent.event_talk_keyboard, talkKeyboard);
-                TextMessage textMessage1 = new TextMessage(gson.toJson(wsMsg1));
-                session.sendMessage(textMessage1);
                 break;
             case event_talk:
                 log.info("talk event");
@@ -113,14 +96,14 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession webSocketSession, Throwable throwable) {
         String wsSessionId = webSocketSession.getId();
-        map.remove(wsSessionId);
+        sessionMap.remove(wsSessionId);
         log.error("WebSocket 数据传输错误");
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
         String wsSessionId = webSocketSession.getId();
-        map.remove(wsSessionId);
+        sessionMap.remove(wsSessionId);
         log.info("WebSocket 断开连接");
     }
 

@@ -12,5 +12,5 @@ import java.util.List;
  */
 @Mapper
 public interface TextMessageMapper extends BaseMapper<TextMessage> {
-    List<TextMessage> findByChatId(long chatId, long lastRecordId, int limit);
+    TextMessage findByRecordId(long recordId);
 }

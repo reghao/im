@@ -1,23 +1,31 @@
 package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.ChatDialogMapper;
+import cn.reghao.im.db.mapper.ChatRecordMapper;
 import cn.reghao.im.db.mapper.TextMessageMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
+import cn.reghao.im.model.constant.FileMsgType;
+import cn.reghao.im.model.constant.MsgType;
 import cn.reghao.im.model.dto.message.*;
 import cn.reghao.im.model.po.ChatDialog;
+import cn.reghao.im.model.po.ChatRecord;
+import cn.reghao.im.model.po.FileMessage;
 import cn.reghao.im.model.po.TextMessage;
+import cn.reghao.im.model.vo.chat.ChatRecordVo;
+import cn.reghao.im.model.vo.message.FileMsgResult;
 import cn.reghao.im.model.vo.message.VoteMsgResult;
 import cn.reghao.im.model.vo.user.UserInfo;
-import cn.reghao.im.model.ws.TalkEvtMsg;
+import cn.reghao.im.model.ws.*;
+import cn.reghao.im.service.FileService;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.ws.WebSocketHandlerImpl;
-import cn.reghao.im.ws.msg.ImEvent;
-import cn.reghao.im.ws.msg.Talk;
-import cn.reghao.im.ws.msg.WsMsg;
+import cn.reghao.im.model.constant.EventType;
 import cn.reghao.im.util.Jwt;
+import cn.reghao.jutil.jdk.converter.DateTimeConverter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -31,14 +39,19 @@ public class ChatMsgController {
     private final WebSocketHandlerImpl webSocketHandler;
     private final UserProfileMapper userProfileMapper;
     private final ChatDialogMapper chatDialogMapper;
+    private ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
+    private final FileService fileService;
 
     public ChatMsgController(WebSocketHandlerImpl webSocketHandler, UserProfileMapper userProfileMapper,
-                             ChatDialogMapper chatDialogMapper, TextMessageMapper textMessageMapper) {
+                             ChatDialogMapper chatDialogMapper, ChatRecordMapper chatRecordMapper,
+                             TextMessageMapper textMessageMapper, FileService fileService) {
         this.webSocketHandler = webSocketHandler;
         this.userProfileMapper = userProfileMapper;
         this.chatDialogMapper = chatDialogMapper;
+        this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
+        this.fileService = fileService;
     }
 
     @ApiOperation(value = "发送文本消息")
@@ -48,21 +61,25 @@ public class ChatMsgController {
         long receiverId = textMsg.getReceiverId();
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
+        ChatRecord chatRecord = new ChatRecord(chatId, userId, MsgType.text.getCode());
+        chatRecordMapper.save(chatRecord);
+        int recordId = chatRecord.getId();
 
-        int talkType = textMsg.getTalkType();
+        int chatType = textMsg.getTalkType();
         String text = textMsg.getText();
-
-        TextMessage textMessage = new TextMessage(chatId, userId, text);
+        TextMessage textMessage = new TextMessage(recordId, text);
         textMessageMapper.save(textMessage);
 
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        TalkEvtMsg talkEvtMsg = new TalkEvtMsg(textMessage, userInfo.getNickname(), userInfo.getAvatar(), 1, 0);
-        Talk talk = new Talk(userId, receiverId, talkType);
-        talk.setData(talkEvtMsg);
+        String nickname = userInfo.getNickname();
+        String avatar = userInfo.getAvatar();
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+        chatRecordVo.setContent(textMessage.getContent());
 
-        WsMsg<Talk> wsMsg = new WsMsg<>(ImEvent.event_talk, talk);
-        webSocketHandler.sendMessage(receiverId, wsMsg);
-        webSocketHandler.sendMessage(userId, wsMsg);
+        EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessage<ChatRecordVo> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
+        webSocketHandler.sendMessage(receiverId, eventMessage);
+        webSocketHandler.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
@@ -80,7 +97,27 @@ public class ChatMsgController {
 
     @ApiOperation(value = "发送图片消息")
     @PostMapping(value = "/message/image", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageImage(@RequestBody ImageMsg imageMsg) {
+    public String talkMessageImage(@RequestParam("talk_type") int chatType, @RequestParam("receiver_id") long receiverId,
+                                   @RequestParam("image") MultipartFile image) throws IOException {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        long chatId = chatDialog.getChatId();
+        ChatRecord chatRecord = new ChatRecord(chatId, userId, MsgType.media.getCode());
+        chatRecordMapper.save(chatRecord);
+        int recordId = chatRecord.getId();
+        FileMessage fileMessage = fileService.saveFile(image, recordId, FileMsgType.image.getCode());
+
+        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
+        String nickname = userInfo.getNickname();
+        String avatar = userInfo.getAvatar();
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+        String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
+        chatRecordVo.setFile(new FileMsgResult(fileMessage, userId, createAt));
+
+        EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessage<ChatRecordVo> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
+        webSocketHandler.sendMessage(receiverId, eventMessage);
+        webSocketHandler.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
