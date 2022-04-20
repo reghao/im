@@ -1,5 +1,10 @@
 package cn.reghao.im.ws;
 
+import cn.reghao.im.db.mapper.UserContactMapper;
+import cn.reghao.im.db.mapper.UserProfileMapper;
+import cn.reghao.im.model.ws.EventContent;
+import cn.reghao.im.model.ws.EventMessage;
+import cn.reghao.im.model.ws.LoginEvent;
 import cn.reghao.jutil.jdk.serializer.JsonConverter;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.im.model.constant.EventType;
@@ -13,6 +18,7 @@ import org.springframework.web.socket.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,12 +28,19 @@ import java.util.Map;
 @Slf4j
 @Component
 public class WebSocketHandlerImpl implements WebSocketHandler {
-    private final Map<String, WebSocketSession> sessionMap = new HashMap<>();
+    private final Map<Long, WebSocketSession> sessionMap = new HashMap<>();
     private final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+    private final UserProfileMapper userProfileMapper;
+    private final UserContactMapper userContactMapper;
+
+    public WebSocketHandlerImpl(UserProfileMapper userProfileMapper, UserContactMapper userContactMapper) {
+        this.userProfileMapper = userProfileMapper;
+        this.userContactMapper = userContactMapper;
+    }
 
     public void sendMessage(long userId, Object payload) throws IOException {
-        WebSocketSession session = sessionMap.get(String.valueOf(userId));
+        WebSocketSession session = sessionMap.get(userId);
         if (session != null) {
             TextMessage textMessage = new TextMessage(gson.toJson(payload));
             session.sendMessage(textMessage);
@@ -36,11 +49,31 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) throws IOException {
+        long userId = getUserId(webSocketSession);
+        sessionMap.put(userId, webSocketSession);
+        loginEvent(userId, true);
+        log.info("WebSocket 建立连接");
+    }
+
+    private long getUserId(WebSocketSession webSocketSession) {
         String query = webSocketSession.getUri().getQuery();
         String token = query.replace("token=", "");
-        String userId = Jwt.parse(token).getUserId();
-        sessionMap.put(userId, webSocketSession);
-        log.info("WebSocket 建立连接");
+        return Long.parseLong(Jwt.parse(token).getUserId());
+    }
+
+    private void loginEvent(long userId, boolean online) throws IOException {
+        userProfileMapper.updateSetStatus(userId, online);
+
+        LoginEvent loginEvent = new LoginEvent(userId, online);
+        EventMessage<LoginEvent> eventMessage = new EventMessage<>(EventType.event_login, loginEvent);
+        TextMessage textMessage = new TextMessage(gson.toJson(eventMessage));
+        List<Long> friendIds = userContactMapper.getOnlineFriends(userId);
+        for (Long friendId : friendIds) {
+            WebSocketSession session = sessionMap.get(friendId);
+            if (session != null) {
+                session.sendMessage(textMessage);
+            }
+        }
     }
     
     @Override
@@ -62,6 +95,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     private void dispatchEvent(WebSocketSession session, String payload) throws IOException {
         JsonObject jsonObject = JsonConverter.jsonToJsonElement(payload).getAsJsonObject();
         String event = jsonObject.get("event").getAsString();
+        String content = jsonObject.get("content").getAsString();
         switch (EventType.valueOf(event)) {
             case heartbeat:
                 log.info("heartbeat event");
@@ -95,15 +129,14 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession webSocketSession, Throwable throwable) {
-        String wsSessionId = webSocketSession.getId();
-        sessionMap.remove(wsSessionId);
         log.error("WebSocket 数据传输错误");
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        String wsSessionId = webSocketSession.getId();
-        sessionMap.remove(wsSessionId);
+    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) throws IOException {
+        long userId = getUserId(webSocketSession);
+        sessionMap.remove(userId);
+        loginEvent(userId, false);
         log.info("WebSocket 断开连接");
     }
 

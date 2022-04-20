@@ -16,9 +16,11 @@ public class UserProfile extends BaseObject<Integer> {
     private int gender;
     private String motto;
     private String avatar;
+    private boolean online;
 
     public UserProfile() {
         this.gender = 1;
         this.avatar = "https://pic2.zhimg.com/v2-e5842374b2257b981188c33391b188ad_xll.jpg?source=32738c0c";
+        this.online = true;
     }
 }

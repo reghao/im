@@ -23,4 +23,9 @@
                  inner join user_account account
                             on contact.friend_id=userProfile.user_id and userProfile.user_id=account.user_id and contact.user_id=#{userId}
     </select>
+    <select id="getOnlineFriends" resultType="java.lang.Long">
+        select userProfile.user_id from user_contact userContact
+        inner join user_profile userProfile
+        on userContact.friend_id=userProfile.user_id and userProfile.online=1 and userContact.user_id=#{userId}
+    </select>
 </mapper>

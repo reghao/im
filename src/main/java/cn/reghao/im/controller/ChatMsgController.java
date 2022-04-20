@@ -77,7 +77,7 @@ public class ChatMsgController {
         chatRecordVo.setContent(textMessage.getContent());
 
         EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessage<ChatRecordVo> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
+        EventMessage<EventContent<ChatRecordVo>> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
         webSocketHandler.sendMessage(receiverId, eventMessage);
         webSocketHandler.sendMessage(userId, eventMessage);
         return WebResult.success();
@@ -115,7 +115,7 @@ public class ChatMsgController {
         chatRecordVo.setFile(new FileMsgResult(fileMessage, userId, createAt));
 
         EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessage<ChatRecordVo> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
+        EventMessage<EventContent<ChatRecordVo>> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
         webSocketHandler.sendMessage(receiverId, eventMessage);
         webSocketHandler.sendMessage(userId, eventMessage);
         return WebResult.success();
