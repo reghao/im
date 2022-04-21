@@ -11,7 +11,7 @@
  Target Server Version : 50732
  File Encoding         : 65001
 
- Date: 21/04/2022 09:16:09
+ Date: 21/04/2022 18:42:13
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,7 @@ CREATE TABLE `chat` (
   `chat_id` bigint(20) NOT NULL,
   `chat_type` int(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Table structure for chat_dialog
@@ -53,7 +53,7 @@ CREATE TABLE `chat_dialog` (
   `update_at` datetime NOT NULL,
   `msg_text` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Table structure for chat_record
@@ -66,7 +66,9 @@ CREATE TABLE `chat_record` (
   `update_time` datetime(6) NOT NULL,
   `record_id` bigint(20) DEFAULT NULL,
   `chat_id` bigint(20) NOT NULL,
+  `chat_type` int(11) DEFAULT NULL,
   `sender_id` bigint(20) NOT NULL,
+  `receiver_id` bigint(20) DEFAULT NULL,
   `msg_type` int(10) NOT NULL,
   `is_mark` bit(1) NOT NULL,
   `is_read` bit(1) NOT NULL,
@@ -74,7 +76,22 @@ CREATE TABLE `chat_record` (
   `create_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sender_id` (`sender_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Table structure for code_message
+-- ----------------------------
+DROP TABLE IF EXISTS `code_message`;
+CREATE TABLE `code_message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `deleted` bit(1) NOT NULL,
+  `create_time` datetime(6) NOT NULL,
+  `update_time` datetime(6) NOT NULL,
+  `record_id` bigint(20) NOT NULL,
+  `lang` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Table structure for emoticon
@@ -92,15 +109,15 @@ CREATE TABLE `emoticon` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
--- Table structure for file_message
+-- Table structure for file_info
 -- ----------------------------
-DROP TABLE IF EXISTS `file_message`;
-CREATE TABLE `file_message` (
+DROP TABLE IF EXISTS `file_info`;
+CREATE TABLE `file_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `deleted` bit(1) NOT NULL,
   `create_time` datetime(6) NOT NULL,
   `update_time` datetime(6) NOT NULL,
-  `record_id` bigint(20) NOT NULL,
+  `file_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `filename` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `suffix` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `size` bigint(20) NOT NULL,
@@ -110,7 +127,22 @@ CREATE TABLE `file_message` (
   `source` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sender_id` (`filename`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Table structure for file_message
+-- ----------------------------
+DROP TABLE IF EXISTS `file_message`;
+CREATE TABLE `file_message` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `deleted` bit(1) NOT NULL,
+  `create_time` datetime(6) NOT NULL,
+  `update_time` datetime(6) NOT NULL,
+  `record_id` bigint(20) NOT NULL,
+  `file_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sender_id` (`file_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Table structure for setting
@@ -143,7 +175,7 @@ CREATE TABLE `text_message` (
   `record_id` bigint(20) NOT NULL,
   `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Table structure for user_account
