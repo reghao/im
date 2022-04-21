@@ -42,7 +42,7 @@ public class ChatMsgController {
     private final CodeMessageMapper codeMessageMapper;
     private final FileMessageMapper fileMessageMapper;
     private final FileService fileService;
-    private FileInfoMapper fileInfoMapper;
+    private final FileInfoMapper fileInfoMapper;
 
     public ChatMsgController(EventDispatcher eventDispatcher, UserProfileMapper userProfileMapper,
                              ChatDialogMapper chatDialogMapper, ChatRecordMapper chatRecordMapper,
@@ -160,7 +160,7 @@ public class ChatMsgController {
         chatRecordMapper.save(chatRecord);
         int recordId = chatRecord.getId();
 
-        FileInfo fileInfo = fileService.saveFile(image, recordId, FileMsgType.image.getCode());
+        FileInfo fileInfo = fileService.saveImageFile(image);
         FileMessage fileMessage = new FileMessage(recordId, fileInfo.getFileId());
         fileMessageMapper.save(fileMessage);
 

@@ -67,6 +67,7 @@ public class UserController {
 
     @GetMapping(value = "/detail", produces = MediaType.APPLICATION_JSON_VALUE)
     public String usersDetail() {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         return WebResult.success();
     }
 }

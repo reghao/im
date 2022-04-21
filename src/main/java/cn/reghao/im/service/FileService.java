@@ -96,7 +96,8 @@ public class FileService {
         fileInfoMapper.save(fileInfo);
     }
 
-    public FileInfo saveFile(MultipartFile multipartFile, long recordId, int fileType) throws IOException {
+    public FileInfo saveImageFile(MultipartFile multipartFile) throws IOException {
+        int fileType = FileMsgType.image.getCode();
         String originalName = multipartFile.getOriginalFilename();
         String suffix = originalName.substring(originalName.lastIndexOf(".") + 1);
         long size = multipartFile.getSize();

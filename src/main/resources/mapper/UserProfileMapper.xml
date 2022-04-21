@@ -4,13 +4,16 @@
 <mapper namespace="cn.reghao.im.db.mapper.UserProfileMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into user_profile
-        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`gender`,`motto`,`avatar`,`online`)
+        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`nickname`,`gender`,`motto`,`avatar`,`online`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{gender},#{motto},#{avatar},#{online})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{nickname},#{gender},#{motto},#{avatar},#{online})
     </insert>
 
     <update id="updateSetStatus">
         update user_profile set online=#{online} where user_id=#{userId}
+    </update>
+    <update id="updateSetAvatar">
+        update user_profile set avatar=#{avatar} where user_id=#{userId}
     </update>
 
     <select id="findByMobile" resultType="cn.reghao.im.model.po.UserProfile">

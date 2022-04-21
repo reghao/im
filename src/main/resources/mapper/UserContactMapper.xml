@@ -10,18 +10,16 @@
     </insert>
     
     <select id="findByUserId" resultType="cn.reghao.im.model.vo.contact.ContactInfo">
-        select contact.friend_id as id, account.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
         inner join user_profile userProfile
-        inner join user_account account
-        on contact.friend_id=userProfile.user_id and userProfile.user_id=account.user_id and contact.user_id=#{userId}
+        on contact.friend_id=userProfile.user_id and contact.user_id=#{userId}
     </select>
     <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.vo.contact.ContactInfo">
-        select contact.friend_id as id, account.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
-                 inner join user_profile userProfile
-                 inner join user_account account
-                            on contact.friend_id=userProfile.user_id and userProfile.user_id=account.user_id and contact.user_id=#{userId}
+        inner join user_profile userProfile
+        on contact.friend_id=userProfile.user_id and contact.user_id=#{userId}
     </select>
     <select id="getOnlineFriends" resultType="java.lang.Long">
         select userProfile.user_id from user_contact userContact

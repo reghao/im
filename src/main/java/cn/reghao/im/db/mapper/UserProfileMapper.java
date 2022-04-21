@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface UserProfileMapper extends BaseMapper<UserProfile> {
     void updateSetStatus(long userId, boolean online);
+    void updateSetAvatar(long userId, String avatar);
 
     UserProfile findByMobile(String mobile);
     UserProfile findByUserId(long userId);
