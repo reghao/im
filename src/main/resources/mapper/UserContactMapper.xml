@@ -19,7 +19,7 @@
         select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
         inner join user_profile userProfile
-        on contact.friend_id=userProfile.user_id and contact.user_id=#{userId}
+        on contact.friend_id=userProfile.user_id and contact.user_id=#{userId} and contact.friend_id=#{friendId}
     </select>
     <select id="getOnlineFriends" resultType="java.lang.Long">
         select userProfile.user_id from user_contact userContact

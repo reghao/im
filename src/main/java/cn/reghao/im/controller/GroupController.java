@@ -1,11 +1,21 @@
 package cn.reghao.im.controller;
 
+import cn.reghao.im.db.mapper.ChatGroupMapper;
+import cn.reghao.im.db.mapper.ChatGroupMemberMapper;
+import cn.reghao.im.db.mapper.UserContactMapper;
+import cn.reghao.im.model.dto.CreateGroup;
+import cn.reghao.im.model.po.ChatGroup;
+import cn.reghao.im.model.vo.contact.ContactInfo;
+import cn.reghao.im.model.vo.user.UserInfo;
+import cn.reghao.im.util.Jwt;
 import cn.reghao.im.util.WebResult;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author reghao
@@ -14,9 +24,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/group")
 public class GroupController {
+    private UserContactMapper userContactMapper;
+    private ChatGroupMapper chatGroupMapper;
+    private ChatGroupMemberMapper chatGroupMemberMapper;
+
+    public GroupController(UserContactMapper userContactMapper, ChatGroupMapper chatGroupMapper,
+                           ChatGroupMemberMapper chatGroupMemberMapper) {
+        this.userContactMapper = userContactMapper;
+        this.chatGroupMapper = chatGroupMapper;
+        this.chatGroupMemberMapper = chatGroupMemberMapper;
+    }
+
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public String groupList() {
-        return WebResult.success();
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        List<UserInfo> rows = new ArrayList<>();
+        Map<String, List<UserInfo>> map = new HashMap<>();
+        map.put("rows", rows);
+        return WebResult.success(map);
     }
 
     @GetMapping(value = "/detail", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -25,8 +50,15 @@ public class GroupController {
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupCreate() {
-        return WebResult.success();
+    public String groupCreate(@RequestBody CreateGroup createGroup) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        ChatGroup chatGroup = new ChatGroup(createGroup, userId);
+        chatGroupMapper.save(chatGroup);
+        long groupId = chatGroup.getId();
+
+        Map<String, Long> map = new HashMap<>();
+        map.put("group_id", groupId);
+        return WebResult.success(map);
     }
 
     @PostMapping(value = "/setting", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,8 +92,10 @@ public class GroupController {
     }
 
     @GetMapping(value = "/member/invites", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupMemberInvites() {
-        return WebResult.success();
+    public String groupMemberInvites(@RequestParam("group_id") long groupId) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        List<ContactInfo> list = userContactMapper.findByUserId(userId);
+        return WebResult.success(list);
     }
 
     @GetMapping(value = "/member/list", produces = MediaType.APPLICATION_JSON_VALUE)

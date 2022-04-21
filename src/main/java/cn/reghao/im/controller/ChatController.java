@@ -78,7 +78,8 @@ public class ChatController {
             ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
             return WebResult.success(chatDialogVo);
         } else if (chatType == 2) {
-            return WebResult.success("待实现");
+
+            return WebResult.success("群组对话框待实现");
         } else {
             return WebResult.failWithMsg("chatType 错误");
         }

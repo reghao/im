@@ -8,10 +8,13 @@ import lombok.Data;
  */
 @Data
 public class UserInfo {
+    private long id;
+    private long userId;
     private long uid;
     private String nickname;
     private int gender;
     private String motto;
     private String signature;
     private String avatar;
+    private int isOnline;
 }
