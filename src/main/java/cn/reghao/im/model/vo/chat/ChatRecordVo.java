@@ -1,10 +1,12 @@
 package cn.reghao.im.model.vo.chat;
 
+import cn.reghao.im.model.dto.message.CodeBlockMsg;
 import cn.reghao.im.model.po.ChatRecord;
+import cn.reghao.im.model.po.UserProfile;
+import cn.reghao.im.model.vo.message.CodeBlockResult;
 import cn.reghao.im.model.vo.message.FileMsgResult;
+import cn.reghao.im.model.vo.user.UserInfo;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
-import cn.reghao.im.model.po.TextMessage;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,32 +21,32 @@ import lombok.Setter;
 public class ChatRecordVo {
     private int id;
     private int talkType;
-    private long userId;
     private long receiverId;
-    private int msgType;
-
-    // TODO 根据 MsgType 来确定
-    private String content;
-    private FileMsgResult file;
-
     private boolean isMark;
     private boolean isRead;
     private boolean isRevoke;
+    private String createdAt;
+    private int msgType;
+    // TODO 根据 MsgType 来确定
+    private String content;
+    private CodeBlockResult codeBlock;
+    private FileMsgResult file;
+
+    private long userId;
     private String nickname;
     private String avatar;
-    private String createdAt;
 
-    public ChatRecordVo(ChatRecord chatRecord, String nickname, String avatar, int chatType, long receiverId) {
+    public ChatRecordVo(ChatRecord chatRecord, UserInfo userInfo) {
         this.id = chatRecord.getId();
-        this.talkType = chatType;
-        this.userId = chatRecord.getSenderId();
-        this.receiverId = receiverId;
+        this.talkType = chatRecord.getChatType();
+        this.userId = userInfo.getUid();
+        this.receiverId = chatRecord.getReceiverId();
         this.msgType = chatRecord.getMsgType();
-        this.isMark = true;
-        this.isRead = true;
-        this.isRevoke = false;
-        this.nickname = nickname;
-        this.avatar = avatar;
+        this.isMark = chatRecord.isMark();
+        this.isRead = chatRecord.isRead();
+        this.isRevoke = chatRecord.isRevoke();
+        this.nickname = userInfo.getNickname();
+        this.avatar = userInfo.getAvatar();
         this.createdAt = DateTimeConverter.format(chatRecord.getCreateAt());
     }
 }

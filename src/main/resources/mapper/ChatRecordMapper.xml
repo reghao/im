@@ -4,14 +4,22 @@
 <mapper namespace="cn.reghao.im.db.mapper.ChatRecordMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into chat_record
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`sender_id`,`msg_type`,`is_mark`,`is_read`,`is_revoke`,`create_at`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`sender_id`,`receiver_id`,`msg_type`,`is_mark`,`is_read`,`is_revoke`,`create_at`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{senderId},#{msgType},#{isMark},#{isRead},#{isRevoke},#{createAt})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{senderId},#{receiverId},#{msgType},#{isMark},#{isRead},#{isRevoke},#{createAt})
     </insert>
 
+    <update id="updateSetRevoke">
+        update chat_record set is_revoke=1 where id=#{recordId}
+    </update>
+
     <select id="findByChatId" resultType="cn.reghao.im.model.po.ChatRecord">
-        select * from chat_record where chat_id=#{chatId} and id>#{lastRecordId}
+        select * from chat_record
+        where chat_id=#{chatId} and id>#{lastRecordId}
         order by id desc
         limit #{limit}
+    </select>
+    <select id="findByRecordId" resultType="cn.reghao.im.model.po.ChatRecord">
+        select * from chat_record where id=#{recordID}
     </select>
 </mapper>

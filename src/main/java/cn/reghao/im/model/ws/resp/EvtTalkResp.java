@@ -1,16 +1,16 @@
-package cn.reghao.im.model.ws;
+package cn.reghao.im.model.ws.resp;
 
 /**
  * @author reghao
- * @date 2022-04-20 18:59:30
+ * @date 2022-04-21 11:32:33
  */
-public class EventContent<T> {
+public class EvtTalkResp<U> {
     private int talkType;
     private long senderId;
     private long receiverId;
-    private T data;
+    private U data;
 
-    public EventContent(int talkType, long senderId, long receiverId, T data) {
+    public EvtTalkResp(int talkType, long senderId, long receiverId, U data) {
         this.talkType = talkType;
         this.senderId = senderId;
         this.receiverId = receiverId;

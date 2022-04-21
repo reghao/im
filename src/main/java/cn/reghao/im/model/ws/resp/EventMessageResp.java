@@ -1,19 +1,20 @@
-package cn.reghao.im.model.ws;
+package cn.reghao.im.model.ws.resp;
 
 import cn.reghao.im.model.constant.EventType;
-import cn.reghao.im.model.ws.EventContent;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author reghao
- * @date 2022-04-19 12:20:56
+ * @date 2022-04-21 11:05:56
  */
 @Getter
-public class EventMessage<T> {
+@Setter
+public class EventMessageResp <T> {
     private final String event;
     private final T content;
 
-    public EventMessage(EventType eventType, T content) {
+    public EventMessageResp(EventType eventType, T content) {
         this.event = eventType.name();
         this.content = content;
     }

@@ -1,11 +1,14 @@
 package cn.reghao.im.model.vo.message;
 
+import cn.reghao.im.model.po.FileInfo;
 import cn.reghao.im.model.po.FileMessage;
+import lombok.Getter;
 
 /**
  * @author reghao
  * @date 2022-04-20 14:18:23
  */
+@Getter
 public class FileMsgResult {
     private long recordId;
     private long userId;
@@ -20,18 +23,18 @@ public class FileMsgResult {
     private String url;
     private String createdAt;
 
-    public FileMsgResult(FileMessage fileMessage, long userId, String createdAt) {
+    public FileMsgResult(FileMessage fileMessage, FileInfo fileInfo, long userId, String createdAt) {
         this.recordId = fileMessage.getRecordId();
         this.userId = userId;
-        this.drive = fileMessage.getDrive();
+        this.drive = fileInfo.getDrive();
         this.id = fileMessage.getId();
-        this.originalName = fileMessage.getFilename();
-        this.path = fileMessage.getUrl();
-        this.size = fileMessage.getSize();
-        this.source = fileMessage.getSource();
-        this.suffix = fileMessage.getSuffix();
-        this.type = fileMessage.getFileType();;
-        this.url = fileMessage.getUrl();
+        this.originalName = fileInfo.getFilename();
+        this.path = fileInfo.getUrl();
+        this.size = fileInfo.getSize();
+        this.source = fileInfo.getSource();
+        this.suffix = fileInfo.getSuffix();
+        this.type = fileInfo.getFileType();;
+        this.url = fileInfo.getUrl();
         this.createdAt = createdAt;
     }
 }

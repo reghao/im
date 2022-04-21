@@ -14,23 +14,10 @@ import lombok.Setter;
 @Setter
 public class FileMessage extends BaseObject<Integer> {
     private long recordId;
-    private String filename;
-    private String suffix;
-    private long size;
-    // 1 - 图片文件, 2 - 录音文件, 4 - 上传的附件(非图片)
-    private int fileType;
-    private String url;
-    private int drive;
-    private int source;
+    private String fileId;
 
-    public FileMessage(long recordId, String filename, String suffix, long size, int fileType, String url) {
+    public FileMessage(long recordId, String fileId) {
         this.recordId = recordId;
-        this.filename = filename;
-        this.suffix = suffix;
-        this.size = size;
-        this.fileType = fileType;
-        this.url = url;
-        this.drive = 1;
-        this.source = 1;
+        this.fileId = fileId;
     }
 }

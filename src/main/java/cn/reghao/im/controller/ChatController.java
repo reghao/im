@@ -10,6 +10,7 @@ import cn.reghao.im.model.po.*;
 import cn.reghao.im.model.vo.chat.ChatDialogVo;
 import cn.reghao.im.model.vo.chat.ChatRecordVo;
 import cn.reghao.im.model.vo.chat.ChatRecordList;
+import cn.reghao.im.model.vo.message.CodeBlockResult;
 import cn.reghao.im.model.vo.message.FileMsgResult;
 import cn.reghao.im.model.vo.user.UserInfo;
 import cn.reghao.im.util.WebResult;
@@ -36,15 +37,21 @@ public class ChatController {
     private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
     private final FileMessageMapper fileMessageMapper;
+    private final CodeMessageMapper codeMessageMapper;
+    private final FileInfoMapper fileInfoMapper;
 
     public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
-                          ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper, FileMessageMapper fileMessageMapper) {
+                          ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper,
+                          FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper,
+                          FileInfoMapper fileInfoMapper) {
         this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.userProfileMapper = userProfileMapper;
         this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
         this.fileMessageMapper = fileMessageMapper;
+        this.codeMessageMapper = codeMessageMapper;
+        this.fileInfoMapper = fileInfoMapper;
     }
 
     @ApiOperation(value = "创建聊天窗口")
@@ -85,24 +92,31 @@ public class ChatController {
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
         List<ChatRecord> chatRecords = chatRecordMapper.findByChatId(chatId, recordId, limit);
-
-        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        String nickname = userInfo.getNickname();
-        String avatar = userInfo.getAvatar();
         List<ChatRecordVo> list = chatRecords.stream()
                 .map(chatRecord -> {
-                    ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+                    UserInfo userInfo = userProfileMapper.findUserInfoByUserId(chatRecord.getSenderId());
+                    ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
                     long recordId1 = chatRecord.getId();
                     int msgType = chatRecord.getMsgType();
-                    if (msgType == MsgType.text.getCode()) {
+                    boolean revoke = chatRecordVo.isRevoke();
+                    if (revoke) {
+                        //
+                    } else if (msgType == MsgType.text.getCode()) {
                         TextMessage textMessage = textMessageMapper.findByRecordId(recordId1);
                         chatRecordVo.setContent(textMessage.getContent());
                     } else if (msgType == MsgType.media.getCode()) {
                         FileMessage fileMessage = fileMessageMapper.findByRecordId(recordId1);
+                        FileInfo fileInfo = fileInfoMapper.findByFileId(fileMessage.getFileId());
                         long senderId = chatRecord.getSenderId();
                         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-                        chatRecordVo.setFile(new FileMsgResult(fileMessage, senderId, createAt));
+                        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, senderId, createAt));
+                    } else if (msgType == MsgType.codeBlock.getCode()) {
+                        // TODO 代码块消息
+                        CodeMessage codeMessage = codeMessageMapper.findByRecordId(recordId1);
+                        CodeBlockResult codeBlockResult = new CodeBlockResult(codeMessage, userId);
+                        chatRecordVo.setCodeBlock(codeBlockResult);
                     }
+
                     return chatRecordVo;
                 }).collect(Collectors.toList());
 

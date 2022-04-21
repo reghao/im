@@ -12,5 +12,8 @@ import java.util.List;
  */
 @Mapper
 public interface ChatRecordMapper extends BaseMapper<ChatRecord> {
+    void updateSetRevoke(long recordId);
+
     List<ChatRecord> findByChatId(long chatId, long lastRecordId, int limit);
+    ChatRecord findByRecordId(long recordId);
 }

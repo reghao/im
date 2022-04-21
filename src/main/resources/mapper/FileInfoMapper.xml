@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.FileInfoMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into file_info
+        (`id`,`deleted`,`create_time`,`update_time`,`file_id`,`filename`,`suffix`,`size`,`file_type`,`url`,`drive`,`source`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{fileId},#{filename},#{suffix},#{size},#{fileType},#{url},#{drive},#{source})
+    </insert>
+
+    <select id="findByFileId" resultType="cn.reghao.im.model.po.FileInfo">
+        select * from file_info where file_id=#{fileId}
+    </select>
+</mapper>

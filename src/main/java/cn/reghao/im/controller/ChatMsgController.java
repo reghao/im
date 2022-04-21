@@ -1,24 +1,22 @@
 package cn.reghao.im.controller;
 
-import cn.reghao.im.db.mapper.ChatDialogMapper;
-import cn.reghao.im.db.mapper.ChatRecordMapper;
-import cn.reghao.im.db.mapper.TextMessageMapper;
-import cn.reghao.im.db.mapper.UserProfileMapper;
+import cn.reghao.im.db.mapper.*;
 import cn.reghao.im.model.constant.FileMsgType;
 import cn.reghao.im.model.constant.MsgType;
+import cn.reghao.im.model.dto.RevokeRecord;
 import cn.reghao.im.model.dto.message.*;
-import cn.reghao.im.model.po.ChatDialog;
-import cn.reghao.im.model.po.ChatRecord;
-import cn.reghao.im.model.po.FileMessage;
-import cn.reghao.im.model.po.TextMessage;
+import cn.reghao.im.model.po.*;
 import cn.reghao.im.model.vo.chat.ChatRecordVo;
+import cn.reghao.im.model.vo.message.CodeBlockResult;
 import cn.reghao.im.model.vo.message.FileMsgResult;
 import cn.reghao.im.model.vo.message.VoteMsgResult;
 import cn.reghao.im.model.vo.user.UserInfo;
-import cn.reghao.im.model.ws.*;
+import cn.reghao.im.model.ws.resp.EventMessageResp;
+import cn.reghao.im.model.ws.resp.EvtTalkResp;
+import cn.reghao.im.model.ws.resp.EvtTalkRevokeResp;
 import cn.reghao.im.service.FileService;
 import cn.reghao.im.util.WebResult;
-import cn.reghao.im.ws.WebSocketHandlerImpl;
+import cn.reghao.im.ws.EventDispatcher;
 import cn.reghao.im.model.constant.EventType;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
@@ -36,22 +34,29 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/talk")
 public class ChatMsgController {
-    private final WebSocketHandlerImpl webSocketHandler;
+    private final EventDispatcher eventDispatcher;
     private final UserProfileMapper userProfileMapper;
     private final ChatDialogMapper chatDialogMapper;
-    private ChatRecordMapper chatRecordMapper;
+    private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
+    private final CodeMessageMapper codeMessageMapper;
+    private final FileMessageMapper fileMessageMapper;
     private final FileService fileService;
+    private FileInfoMapper fileInfoMapper;
 
-    public ChatMsgController(WebSocketHandlerImpl webSocketHandler, UserProfileMapper userProfileMapper,
+    public ChatMsgController(EventDispatcher eventDispatcher, UserProfileMapper userProfileMapper,
                              ChatDialogMapper chatDialogMapper, ChatRecordMapper chatRecordMapper,
-                             TextMessageMapper textMessageMapper, FileService fileService) {
-        this.webSocketHandler = webSocketHandler;
+                             TextMessageMapper textMessageMapper, CodeMessageMapper codeMessageMapper,
+                             FileMessageMapper fileMessageMapper, FileService fileService, FileInfoMapper fileInfoMapper) {
+        this.eventDispatcher = eventDispatcher;
         this.userProfileMapper = userProfileMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
+        this.codeMessageMapper = codeMessageMapper;
+        this.fileMessageMapper = fileMessageMapper;
         this.fileService = fileService;
+        this.fileInfoMapper = fileInfoMapper;
     }
 
     @ApiOperation(value = "发送文本消息")
@@ -59,39 +64,88 @@ public class ChatMsgController {
     public String talkMessageText(@RequestBody TextMsg textMsg) throws IOException {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long receiverId = textMsg.getReceiverId();
+        int chatType = textMsg.getTalkType();
+
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
-        ChatRecord chatRecord = new ChatRecord(chatId, userId, MsgType.text.getCode());
+
+        ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.text.getCode());
         chatRecordMapper.save(chatRecord);
         int recordId = chatRecord.getId();
 
-        int chatType = textMsg.getTalkType();
         String text = textMsg.getText();
         TextMessage textMessage = new TextMessage(recordId, text);
         textMessageMapper.save(textMessage);
 
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        String nickname = userInfo.getNickname();
-        String avatar = userInfo.getAvatar();
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
         chatRecordVo.setContent(textMessage.getContent());
 
-        EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessage<EventContent<ChatRecordVo>> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
-        webSocketHandler.sendMessage(receiverId, eventMessage);
-        webSocketHandler.sendMessage(userId, eventMessage);
+        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        eventDispatcher.sendMessage(receiverId, eventMessage);
+        eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
     @ApiOperation(value = "发送代码块消息")
     @PostMapping(value = "/message/code", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageCode(@RequestBody CodeBlockMsg codeBlockMsg) {
+    public String talkMessageCode(@RequestBody CodeBlockMsg codeBlockMsg) throws IOException {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long receiverId = codeBlockMsg.getReceiverId();
+        int chatType = codeBlockMsg.getTalkType();
+
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        long chatId = chatDialog.getChatId();
+
+        ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.codeBlock.getCode());
+        chatRecordMapper.save(chatRecord);
+        int recordId = chatRecord.getId();
+
+        String lang = codeBlockMsg.getLang();
+        String code = codeBlockMsg.getCode();
+        CodeMessage codeMessage = new CodeMessage(recordId, lang, code);
+        codeMessageMapper.save(codeMessage);
+
+        CodeBlockResult codeBlockResult = new CodeBlockResult(codeMessage, userId);
+        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
+        chatRecordVo.setCodeBlock(codeBlockResult);
+
+        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        eventDispatcher.sendMessage(receiverId, eventMessage);
+        eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
     @ApiOperation(value = "发送文件消息")
     @PostMapping(value = "/message/file", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageFile(@RequestBody FileMsg fileMsg) {
+    public String talkMessageFile(@RequestBody FileMsg fileMsg) throws IOException {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long receiverId = fileMsg.getReceiverId();
+        int chatType = fileMsg.getTalkType();
+        String uploadId = fileMsg.getUploadId();
+
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        long chatId = chatDialog.getChatId();
+        ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.media.getCode());
+        chatRecordMapper.save(chatRecord);
+        int recordId = chatRecord.getId();
+
+        FileMessage fileMessage = new FileMessage(recordId, uploadId);
+        fileMessageMapper.save(fileMessage);
+
+        FileInfo fileInfo = fileInfoMapper.findByFileId(uploadId);
+        UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
+        String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
+        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, userId, createAt));
+
+        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        eventDispatcher.sendMessage(receiverId, eventMessage);
+        eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
@@ -102,22 +156,23 @@ public class ChatMsgController {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
-        ChatRecord chatRecord = new ChatRecord(chatId, userId, MsgType.media.getCode());
+        ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.media.getCode());
         chatRecordMapper.save(chatRecord);
         int recordId = chatRecord.getId();
-        FileMessage fileMessage = fileService.saveFile(image, recordId, FileMsgType.image.getCode());
+
+        FileInfo fileInfo = fileService.saveFile(image, recordId, FileMsgType.image.getCode());
+        FileMessage fileMessage = new FileMessage(recordId, fileInfo.getFileId());
+        fileMessageMapper.save(fileMessage);
 
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        String nickname = userInfo.getNickname();
-        String avatar = userInfo.getAvatar();
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, nickname, avatar, chatType, receiverId);
+        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-        chatRecordVo.setFile(new FileMsgResult(fileMessage, userId, createAt));
+        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, userId, createAt));
 
-        EventContent<ChatRecordVo> eventContent = new EventContent<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessage<EventContent<ChatRecordVo>> eventMessage = new EventMessage<>(EventType.event_talk, eventContent);
-        webSocketHandler.sendMessage(receiverId, eventMessage);
-        webSocketHandler.sendMessage(userId, eventMessage);
+        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
+        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        eventDispatcher.sendMessage(receiverId, eventMessage);
+        eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
     }
 
@@ -135,7 +190,18 @@ public class ChatMsgController {
 
     @ApiOperation(value = "撤回消息")
     @PostMapping(value = "/message/revoke", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageRevoke(@RequestParam("record_id") int recordId) {
+    public String talkMessageRevoke(@RequestBody RevokeRecord revokeRecord) throws IOException {
+        long recordId = revokeRecord.getRecordId();
+        chatRecordMapper.updateSetRevoke(recordId);
+        ChatRecord chatRecord = chatRecordMapper.findByRecordId(revokeRecord.getRecordId());
+        int chatType = chatRecord.getChatType();
+        long senderId = chatRecord.getSenderId();
+        long receiverId = chatRecord.getReceiverId();
+
+        EvtTalkRevokeResp resp = new EvtTalkRevokeResp(chatType, senderId, receiverId, revokeRecord.getRecordId());
+        EventMessageResp<EvtTalkRevokeResp> eventMessage = new EventMessageResp<>(EventType.event_talk_revoke, resp);
+        eventDispatcher.sendMessage(receiverId, eventMessage);
+        eventDispatcher.sendMessage(senderId, eventMessage);
         return WebResult.success();
     }
 

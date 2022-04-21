@@ -8,7 +8,7 @@ import java.util.Map;
  * @date 2022-04-20 14:57:36
  */
 public enum FileMsgType {
-    image(1, "图片"), audio(2, "录音"), attachment(4, "附件");
+    image(1, "图片"), audio(2, "音频"), video(3, "视频"), attachment(4, "附件");
 
     private final Integer code;
     private final String desc;
