@@ -4,9 +4,9 @@
 <mapper namespace="cn.reghao.im.db.mapper.FileMessageMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into file_message
-        (`id`,`deleted`,`create_time`,`update_time`,`record_id`,`file_id`)
+        (`id`,`deleted`,`create_time`,`update_time`,`record_id`,`upload_id`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{recordId},#{fileId})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{recordId},#{uploadId})
     </insert>
 
     <select id="findByRecordId" resultType="cn.reghao.im.model.po.FileMessage">

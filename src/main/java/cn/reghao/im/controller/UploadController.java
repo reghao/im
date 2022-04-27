@@ -22,6 +22,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1/upload")
+@Deprecated
 public class UploadController {
     private final FileService fileService;
     private final UserProfileMapper userProfileMapper;
@@ -51,6 +52,7 @@ public class UploadController {
 
     @PostMapping(value = "/multipart", produces = MediaType.APPLICATION_JSON_VALUE)
     public String uploadMultipart(@RequestParam("file") MultipartFile file, @RequestParam("upload_id") String uploadId,
+                                  @RequestParam(value = "sha256sum", required = false) String sha256sum,
                                   @RequestParam("split_index") int splitIndex, @RequestParam("split_num") int splitNum)
             throws IOException {
 

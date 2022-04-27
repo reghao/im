@@ -1,7 +1,6 @@
 package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.*;
-import cn.reghao.im.model.constant.FileMsgType;
 import cn.reghao.im.model.constant.MsgType;
 import cn.reghao.im.model.dto.RevokeRecord;
 import cn.reghao.im.model.dto.message.*;
@@ -20,10 +19,12 @@ import cn.reghao.im.ws.EventDispatcher;
 import cn.reghao.im.model.constant.EventType;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
+import cn.reghao.tnb.file.api.dto.FileInfoDto;
+import cn.reghao.tnb.file.api.iface.FileInfoService;
 import io.swagger.annotations.ApiOperation;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -34,6 +35,9 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/v1/talk")
 public class ChatMsgController {
+    @DubboReference(check = false)
+    private FileInfoService fileInfoService;
+
     private final EventDispatcher eventDispatcher;
     private final UserProfileMapper userProfileMapper;
     private final ChatDialogMapper chatDialogMapper;
@@ -136,11 +140,11 @@ public class ChatMsgController {
         FileMessage fileMessage = new FileMessage(recordId, uploadId);
         fileMessageMapper.save(fileMessage);
 
-        FileInfo fileInfo = fileInfoMapper.findByFileId(uploadId);
+        FileInfoDto fileInfoDto = fileInfoService.getFileInfo(uploadId);
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
         ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, userId, createAt));
+        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
 
         EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
         EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
@@ -151,8 +155,10 @@ public class ChatMsgController {
 
     @ApiOperation(value = "发送图片消息")
     @PostMapping(value = "/message/image", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageImage(@RequestParam("talk_type") int chatType, @RequestParam("receiver_id") long receiverId,
-                                   @RequestParam("image") MultipartFile image) throws IOException {
+    public String talkMessageImage(@RequestParam("talk_type") int chatType,
+                                   @RequestParam("receiver_id") long receiverId,
+                                   @RequestParam("upload_id") String uploadId) throws IOException {
+
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         long chatId = chatDialog.getChatId();
@@ -160,14 +166,14 @@ public class ChatMsgController {
         chatRecordMapper.save(chatRecord);
         int recordId = chatRecord.getId();
 
-        FileInfo fileInfo = fileService.saveImageFile(image);
-        FileMessage fileMessage = new FileMessage(recordId, fileInfo.getFileId());
+        FileMessage fileMessage = new FileMessage(recordId, uploadId);
         fileMessageMapper.save(fileMessage);
 
+        FileInfoDto fileInfoDto = fileInfoService.getFileInfo(uploadId);
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
         ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, userId, createAt));
+        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
 
         EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
         EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);

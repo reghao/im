@@ -3,3 +3,6 @@ spring:
     url: jdbc:mysql://localhost:3306/reghao_im_rdb?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2b8
     username: dev
     password: Dev@123456
+dubbo:
+  registry:
+    address: zookeeper://localhost:2181

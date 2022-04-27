@@ -40,8 +40,8 @@ public class FileService {
         }
         map.put(uploadId, originalName);
 
-        // 分片大小
-        long splitSize = 1024*1024;
+        // 分片大小 10MiB
+        long splitSize = 1024*1024*20;
         return new InitiateVo(uploadId, splitSize);
     }
 
@@ -93,7 +93,7 @@ public class FileService {
         String url = String.format("http://localhost:8003/group0/node0/%s", path);
         // TODO 根据 content-type 设置文件类型
         FileInfo fileInfo = new FileInfo(uploadId, originalName, suffix, 0, FileMsgType.attachment.getCode(), url);
-        fileInfoMapper.save(fileInfo);
+        //fileInfoMapper.save(fileInfo);
     }
 
     public FileInfo saveImageFile(MultipartFile multipartFile) throws IOException {

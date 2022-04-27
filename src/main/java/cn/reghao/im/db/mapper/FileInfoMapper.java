@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2022-04-21 17:45:40
  */
 @Mapper
+@Deprecated
 public interface FileInfoMapper extends BaseMapper<FileInfo> {
     FileInfo findByFileId(String fileId);
 }

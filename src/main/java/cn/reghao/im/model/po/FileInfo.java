@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Deprecated
 public class FileInfo extends BaseObject<Integer> {
     private String fileId;
     private String filename;

@@ -17,4 +17,5 @@ public class PartUploadInitiate implements Serializable {
 
     private String fileName;
     private long fileSize;
+    private String fileSha256sum;
 }

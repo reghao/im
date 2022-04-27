@@ -16,7 +16,10 @@ import cn.reghao.im.model.vo.user.UserInfo;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
+import cn.reghao.tnb.file.api.dto.FileInfoDto;
+import cn.reghao.tnb.file.api.iface.FileInfoService;
 import io.swagger.annotations.ApiOperation;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/talk")
 public class ChatController {
+    @DubboReference(check = false)
+    private FileInfoService fileInfoService;
+
     private final ChatMapper chatMapper;
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
@@ -38,12 +44,10 @@ public class ChatController {
     private final TextMessageMapper textMessageMapper;
     private final FileMessageMapper fileMessageMapper;
     private final CodeMessageMapper codeMessageMapper;
-    private final FileInfoMapper fileInfoMapper;
 
     public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
                           ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper,
-                          FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper,
-                          FileInfoMapper fileInfoMapper) {
+                          FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper) {
         this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.userProfileMapper = userProfileMapper;
@@ -51,7 +55,6 @@ public class ChatController {
         this.textMessageMapper = textMessageMapper;
         this.fileMessageMapper = fileMessageMapper;
         this.codeMessageMapper = codeMessageMapper;
-        this.fileInfoMapper = fileInfoMapper;
     }
 
     @ApiOperation(value = "创建聊天窗口")
@@ -107,10 +110,12 @@ public class ChatController {
                         chatRecordVo.setContent(textMessage.getContent());
                     } else if (msgType == MsgType.media.getCode()) {
                         FileMessage fileMessage = fileMessageMapper.findByRecordId(recordId1);
-                        FileInfo fileInfo = fileInfoMapper.findByFileId(fileMessage.getFileId());
                         long senderId = chatRecord.getSenderId();
                         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-                        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfo, senderId, createAt));
+
+                        String uploadId = fileMessage.getUploadId();
+                        FileInfoDto fileInfoDto = fileInfoService.getFileInfo(uploadId);
+                        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfoDto, senderId, createAt));
                     } else if (msgType == MsgType.codeBlock.getCode()) {
                         // TODO 代码块消息
                         CodeMessage codeMessage = codeMessageMapper.findByRecordId(recordId1);

@@ -2,6 +2,7 @@ package cn.reghao.im.model.vo.message;
 
 import cn.reghao.im.model.po.FileInfo;
 import cn.reghao.im.model.po.FileMessage;
+import cn.reghao.tnb.file.api.dto.FileInfoDto;
 import lombok.Getter;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Getter;
  */
 @Getter
 public class FileMsgResult {
+    private String fileId;
     private long recordId;
     private long userId;
     private int drive;
@@ -23,18 +25,19 @@ public class FileMsgResult {
     private String url;
     private String createdAt;
 
-    public FileMsgResult(FileMessage fileMessage, FileInfo fileInfo, long userId, String createdAt) {
+    public FileMsgResult(FileMessage fileMessage, FileInfoDto fileInfoDto, long userId, String createdAt) {
+        this.fileId = fileMessage.getUploadId();
         this.recordId = fileMessage.getRecordId();
         this.userId = userId;
-        this.drive = fileInfo.getDrive();
+        this.drive = 1;
         this.id = fileMessage.getId();
-        this.originalName = fileInfo.getFilename();
-        this.path = fileInfo.getUrl();
-        this.size = fileInfo.getSize();
-        this.source = fileInfo.getSource();
-        this.suffix = fileInfo.getSuffix();
-        this.type = fileInfo.getFileType();;
-        this.url = fileInfo.getUrl();
+        this.originalName = fileInfoDto.getFilename();
+        this.path = fileInfoDto.getUrl();
+        this.size = fileInfoDto.getSize();
+        this.source = 1;
+        this.suffix = fileInfoDto.getSuffix();
+        this.type = fileInfoDto.getFileType();;
+        this.url = fileInfoDto.getUrl();
         this.createdAt = createdAt;
     }
 }

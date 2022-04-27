@@ -14,10 +14,10 @@ import lombok.Setter;
 @Setter
 public class FileMessage extends BaseObject<Integer> {
     private long recordId;
-    private String fileId;
+    private String uploadId;
 
-    public FileMessage(long recordId, String fileId) {
+    public FileMessage(long recordId, String uploadId) {
         this.recordId = recordId;
-        this.fileId = fileId;
+        this.uploadId = uploadId;
     }
 }
