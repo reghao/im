@@ -1,7 +1,7 @@
 package cn.reghao.im.controller;
 
 import cn.reghao.im.util.WebResult;
-import cn.reghao.im.model.dto.SmsCode;
+import cn.reghao.im.model.dto.user.SmsCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 

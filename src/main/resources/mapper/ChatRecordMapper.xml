@@ -13,13 +13,13 @@
         update chat_record set is_revoke=1 where id=#{recordId}
     </update>
 
-    <select id="findByChatId" resultType="cn.reghao.im.model.po.ChatRecord">
+    <select id="findByChatId" resultType="cn.reghao.im.model.po.chat.ChatRecord">
         select * from chat_record
         where chat_id=#{chatId} and id>#{lastRecordId}
         order by id desc
         limit #{limit}
     </select>
-    <select id="findByRecordId" resultType="cn.reghao.im.model.po.ChatRecord">
+    <select id="findByRecordId" resultType="cn.reghao.im.model.po.chat.ChatRecord">
         select * from chat_record where id=#{recordID}
     </select>
 </mapper>

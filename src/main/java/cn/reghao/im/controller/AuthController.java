@@ -2,16 +2,16 @@ package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.UserAccountMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
-import cn.reghao.im.model.dto.LoginDto;
+import cn.reghao.im.model.dto.auth.LoginDto;
 import cn.reghao.im.model.po.UserAccount;
 import cn.reghao.im.model.po.UserProfile;
-import cn.reghao.im.model.vo.auth.LoginRetDto;
-import cn.reghao.im.model.vo.user.UserInfo;
+import cn.reghao.im.model.dto.auth.LoginRetDto;
+import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.ws.WebSocketHandlerImpl;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.im.util.JwtPayload;
-import cn.reghao.im.model.dto.UserRegisterDto;
+import cn.reghao.im.model.dto.user.UserRegisterDto;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +28,7 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("/api/v1/auth")
+@Deprecated
 public class AuthController {
     private final WebSocketHandlerImpl webSocketHandler;
     private final UserAccountMapper userAccountMapper;

@@ -14,16 +14,16 @@
         where request_user_id=#{requestUserId} and added_user_id=#{addedUserId}
     </update>
     
-    <select id="findByFriendId" resultType="cn.reghao.im.model.po.UserContactRecord">
+    <select id="findByFriendId" resultType="cn.reghao.im.model.po.contact.UserContactRecord">
         select * from user_contact_record where added_user_id=#{addedUserId}
     </select>
-    <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.po.UserContactRecord">
+    <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.po.contact.UserContactRecord">
         select * from user_contact_record where request_user_id=#{userId} and added_user_id=#{friendId}
     </select>
     <select id="countFriendApply" resultType="java.lang.Integer">
         select count(*) from user_contact_record where friend_apply=1 and added_user_id=#{addedUserId}
     </select>
-    <select id="findByFriendId1" resultType="cn.reghao.im.model.vo.contact.ContactApplyInfo">
+    <select id="findByFriendId1" resultType="cn.reghao.im.model.dto.contact.ContactApplyInfo">
         select userProfile.user_id as id,date_format(addRequest.create_time, '%Y-%m-%d %H:%i:%s') as createdAt,addRequest.added_user_id,addRequest.remark,
                userProfile.user_id,userProfile.avatar,userProfile.nickname
         from user_contact_record addRequest

@@ -8,4 +8,12 @@
         values 
         (#{id},#{deleted},#{createTime},#{updateTime},#{groupId},#{userId})
     </insert>
+    <insert id="saveAll" useGeneratedKeys="true" keyProperty="id">
+        insert ignore into chat_group_member
+        (`id`,`deleted`,`create_time`,`update_time`,`group_id`,`user_id`)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.deleted},#{item.createTime},#{item.updateTime},#{item.groupId},#{item.userId})
+        </foreach>
+    </insert>
 </mapper>

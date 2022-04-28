@@ -9,10 +9,10 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{isDisturb},#{isOnline},#{isRobot},#{isTop},#{userId},#{unreadNum},#{lastSendUserId},#{updateAt},#{msgText})
     </insert>
 
-    <select id="findByReceiverAndUserId" resultType="cn.reghao.im.model.po.ChatDialog">
+    <select id="findByReceiverAndUserId" resultType="cn.reghao.im.model.po.chat.ChatDialog">
         select * from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}
     </select>
-    <select id="findByUserId" resultType="cn.reghao.im.model.po.ChatDialog">
+    <select id="findByUserId" resultType="cn.reghao.im.model.po.chat.ChatDialog">
         select * from chat_dialog where user_id=#{userId}
     </select>
 </mapper>

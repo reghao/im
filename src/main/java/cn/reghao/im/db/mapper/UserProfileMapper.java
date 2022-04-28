@@ -1,6 +1,6 @@
 package cn.reghao.im.db.mapper;
 
-import cn.reghao.im.model.vo.user.UserInfo;
+import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.jutil.jdk.db.BaseMapper;
 import cn.reghao.im.model.po.UserProfile;
 import org.apache.ibatis.annotations.Mapper;

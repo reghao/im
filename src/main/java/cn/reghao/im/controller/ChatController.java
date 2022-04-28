@@ -2,17 +2,22 @@ package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.*;
 import cn.reghao.im.model.constant.MsgType;
-import cn.reghao.im.model.dto.ChatDisturb;
-import cn.reghao.im.model.dto.ChatInitial;
-import cn.reghao.im.model.dto.ClearUnreadChat;
-import cn.reghao.im.model.dto.GetChatRecord;
-import cn.reghao.im.model.po.*;
-import cn.reghao.im.model.vo.chat.ChatDialogVo;
-import cn.reghao.im.model.vo.chat.ChatRecordVo;
-import cn.reghao.im.model.vo.chat.ChatRecordList;
-import cn.reghao.im.model.vo.message.CodeBlockResult;
-import cn.reghao.im.model.vo.message.FileMsgResult;
-import cn.reghao.im.model.vo.user.UserInfo;
+import cn.reghao.im.model.dto.chat.ChatDisturb;
+import cn.reghao.im.model.dto.chat.ChatInitial;
+import cn.reghao.im.model.dto.chat.ClearUnreadChat;
+import cn.reghao.im.model.dto.chat.GetChatRecord;
+import cn.reghao.im.model.dto.chat.ChatDialogVo;
+import cn.reghao.im.model.dto.chat.ChatRecordVo;
+import cn.reghao.im.model.dto.chat.ChatRecordList;
+import cn.reghao.im.model.dto.message.CodeBlockResult;
+import cn.reghao.im.model.dto.message.FileMsgResult;
+import cn.reghao.im.model.dto.user.UserInfo;
+import cn.reghao.im.model.po.chat.Chat;
+import cn.reghao.im.model.po.chat.ChatDialog;
+import cn.reghao.im.model.po.chat.ChatRecord;
+import cn.reghao.im.model.po.message.CodeMessage;
+import cn.reghao.im.model.po.message.FileMessage;
+import cn.reghao.im.model.po.message.TextMessage;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
@@ -82,7 +87,6 @@ public class ChatController {
             ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
             return WebResult.success(chatDialogVo);
         } else if (chatType == 2) {
-
             return WebResult.success("群组对话框待实现");
         } else {
             return WebResult.failWithMsg("chatType 错误");

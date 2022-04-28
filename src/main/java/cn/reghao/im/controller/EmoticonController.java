@@ -1,7 +1,7 @@
 package cn.reghao.im.controller;
 
-import cn.reghao.im.model.vo.emoticon.EmoticonInfo;
-import cn.reghao.im.model.vo.emoticon.EmoticonList;
+import cn.reghao.im.model.dto.emoticon.EmoticonInfo;
+import cn.reghao.im.model.dto.emoticon.EmoticonList;
 import cn.reghao.im.util.WebResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;

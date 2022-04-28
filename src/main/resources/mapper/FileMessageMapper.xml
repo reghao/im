@@ -9,7 +9,7 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{recordId},#{uploadId})
     </insert>
 
-    <select id="findByRecordId" resultType="cn.reghao.im.model.po.FileMessage">
+    <select id="findByRecordId" resultType="cn.reghao.im.model.po.message.FileMessage">
         select * from file_message where record_id=#{recordId}
     </select>
 </mapper>

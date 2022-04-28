@@ -2,7 +2,7 @@ package cn.reghao.im.service;
 
 import cn.reghao.im.db.mapper.ChatDialogMapper;
 import cn.reghao.im.db.mapper.ChatRecordMapper;
-import cn.reghao.im.model.po.ChatDialog;
+import cn.reghao.im.model.po.chat.ChatDialog;
 import org.springframework.stereotype.Service;
 
 /**

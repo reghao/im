@@ -1,10 +1,8 @@
 package cn.reghao.im.db.mapper;
 
 import cn.reghao.jutil.jdk.db.BaseMapper;
-import cn.reghao.im.model.po.TextMessage;
+import cn.reghao.im.model.po.message.TextMessage;
 import org.apache.ibatis.annotations.Mapper;
-
-import java.util.List;
 
 /**
  * @author reghao

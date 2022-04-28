@@ -1,7 +1,7 @@
 package cn.reghao.im.db.mapper;
 
 import cn.reghao.jutil.jdk.db.BaseMapper;
-import cn.reghao.im.model.po.ChatDialog;
+import cn.reghao.im.model.po.chat.ChatDialog;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

@@ -2,9 +2,9 @@ package cn.reghao.im.ws;
 
 import cn.reghao.im.db.mapper.UserContactMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
-import cn.reghao.im.model.constant.EventType;
-import cn.reghao.im.model.ws.resp.EventMessageResp;
-import cn.reghao.im.model.ws.resp.EvtLoginResp;
+import cn.reghao.im.ws.model.EventType;
+import cn.reghao.im.ws.model.resp.EventMessageResp;
+import cn.reghao.im.ws.model.resp.EvtLoginResp;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.serializer.JsonConverter;
 import com.google.gson.*;

@@ -4,8 +4,8 @@ import cn.reghao.im.db.mapper.SettingMapper;
 import cn.reghao.im.db.mapper.UserAccountMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
 import cn.reghao.im.model.po.Setting;
-import cn.reghao.im.model.vo.user.UserInfo;
-import cn.reghao.im.model.vo.user.UserSetting;
+import cn.reghao.im.model.dto.user.UserInfo;
+import cn.reghao.im.model.dto.user.UserSetting;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.util.Jwt;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/users")
+@Deprecated
 public class UserController {
     private final UserAccountMapper userAccountMapper;
     private final UserProfileMapper userProfileMapper;

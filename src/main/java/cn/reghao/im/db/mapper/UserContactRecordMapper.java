@@ -1,8 +1,8 @@
 package cn.reghao.im.db.mapper;
 
-import cn.reghao.im.model.vo.contact.ContactApplyInfo;
+import cn.reghao.im.model.dto.contact.ContactApplyInfo;
 import cn.reghao.jutil.jdk.db.BaseMapper;
-import cn.reghao.im.model.po.UserContactRecord;
+import cn.reghao.im.model.po.contact.UserContactRecord;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

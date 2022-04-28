@@ -24,7 +24,7 @@
     <select id="findByUserId" resultType="cn.reghao.im.model.po.UserProfile">
         select * from user_profile where user_id=#{userId}
     </select>
-    <select id="findUserInfoByUserId" resultType="cn.reghao.im.model.vo.user.UserInfo">
+    <select id="findUserInfoByUserId" resultType="cn.reghao.im.model.dto.user.UserInfo">
         select user_id as uid,nickname,gender,motto,avatar from user_profile where user_id=#{userId}
     </select>
 </mapper>

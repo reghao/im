@@ -9,7 +9,7 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType})
     </insert>
 
-    <select id="findByChatId" resultType="cn.reghao.im.model.po.Chat">
+    <select id="findByChatId" resultType="cn.reghao.im.model.po.chat.Chat">
         select * from chat where chat_id=#{chatId}
     </select>
 </mapper>

@@ -9,7 +9,7 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{recordId},#{content})
     </insert>
 
-    <select id="findByRecordId" resultType="cn.reghao.im.model.po.TextMessage">
+    <select id="findByRecordId" resultType="cn.reghao.im.model.po.message.TextMessage">
         select * from text_message where record_id=#{recordId}
     </select>
 </mapper>

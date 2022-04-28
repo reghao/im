@@ -1,6 +1,6 @@
 package cn.reghao.im.db.mapper;
 
-import cn.reghao.im.model.po.CodeMessage;
+import cn.reghao.im.model.po.message.CodeMessage;
 import cn.reghao.jutil.jdk.db.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
