@@ -1,11 +1,9 @@
 package cn.reghao.im.controller;
 
-import cn.reghao.im.db.mapper.UserProfileMapper;
 import cn.reghao.im.model.dto.PartUploadInitiate;
 import cn.reghao.im.model.po.FileInfo;
 import cn.reghao.im.model.vo.InitiateVo;
 import cn.reghao.im.model.vo.PartUploadVo;
-import cn.reghao.im.service.FileService;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.im.util.WebResult;
 import org.springframework.http.MediaType;
@@ -24,20 +22,12 @@ import java.util.Map;
 @RequestMapping("/api/v1/upload")
 @Deprecated
 public class UploadController {
-    private final FileService fileService;
-    private final UserProfileMapper userProfileMapper;
-
-    public UploadController(FileService fileService, UserProfileMapper userProfileMapper) {
-        this.fileService = fileService;
-        this.userProfileMapper = userProfileMapper;
-    }
-
     @PostMapping(value = "/avatar", produces = MediaType.APPLICATION_JSON_VALUE)
     public String uploadAvatar(@RequestParam("file") MultipartFile file) throws IOException {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        FileInfo fileInfo = fileService.saveImageFile(file);
+        FileInfo fileInfo = null;
         String avatarUrl = fileInfo.getUrl();
-        userProfileMapper.updateSetAvatar(userId, avatarUrl);
+        //userProfileMapper.updateSetAvatar(userId, avatarUrl);
 
         Map<String, String> map = new HashMap<>();
         map.put("avatar", fileInfo.getUrl());
@@ -46,7 +36,7 @@ public class UploadController {
 
     @PostMapping(value = "/multipart/initiate", produces = MediaType.APPLICATION_JSON_VALUE)
     public String uploadMultipartInitiate(@RequestBody PartUploadInitiate partUploadInitiate) throws IOException {
-        InitiateVo initiateVo = fileService.initFilePart(partUploadInitiate);
+        InitiateVo initiateVo = new InitiateVo("1", 1);
         return WebResult.success(initiateVo);
     }
 
@@ -55,9 +45,7 @@ public class UploadController {
                                   @RequestParam(value = "sha256sum", required = false) String sha256sum,
                                   @RequestParam("split_index") int splitIndex, @RequestParam("split_num") int splitNum)
             throws IOException {
-
-        boolean ret = fileService.savePartFile(uploadId, splitIndex, splitNum, file);
-        PartUploadVo partUploadVo  = new PartUploadVo(uploadId, ret);
+        PartUploadVo partUploadVo  = new PartUploadVo(uploadId, false);
         return WebResult.success(partUploadVo);
     }
 }

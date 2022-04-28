@@ -13,7 +13,6 @@ import cn.reghao.im.model.vo.user.UserInfo;
 import cn.reghao.im.model.ws.resp.EventMessageResp;
 import cn.reghao.im.model.ws.resp.EvtTalkResp;
 import cn.reghao.im.model.ws.resp.EvtTalkRevokeResp;
-import cn.reghao.im.service.FileService;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.ws.EventDispatcher;
 import cn.reghao.im.model.constant.EventType;
@@ -45,13 +44,11 @@ public class ChatMsgController {
     private final TextMessageMapper textMessageMapper;
     private final CodeMessageMapper codeMessageMapper;
     private final FileMessageMapper fileMessageMapper;
-    private final FileService fileService;
-    private final FileInfoMapper fileInfoMapper;
 
     public ChatMsgController(EventDispatcher eventDispatcher, UserProfileMapper userProfileMapper,
                              ChatDialogMapper chatDialogMapper, ChatRecordMapper chatRecordMapper,
                              TextMessageMapper textMessageMapper, CodeMessageMapper codeMessageMapper,
-                             FileMessageMapper fileMessageMapper, FileService fileService, FileInfoMapper fileInfoMapper) {
+                             FileMessageMapper fileMessageMapper) {
         this.eventDispatcher = eventDispatcher;
         this.userProfileMapper = userProfileMapper;
         this.chatDialogMapper = chatDialogMapper;
@@ -59,8 +56,6 @@ public class ChatMsgController {
         this.textMessageMapper = textMessageMapper;
         this.codeMessageMapper = codeMessageMapper;
         this.fileMessageMapper = fileMessageMapper;
-        this.fileService = fileService;
-        this.fileInfoMapper = fileInfoMapper;
     }
 
     @ApiOperation(value = "发送文本消息")
@@ -75,8 +70,8 @@ public class ChatMsgController {
 
         ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.text.getCode());
         chatRecordMapper.save(chatRecord);
-        int recordId = chatRecord.getId();
 
+        int recordId = chatRecord.getId();
         String text = textMsg.getText();
         TextMessage textMessage = new TextMessage(recordId, text);
         textMessageMapper.save(textMessage);
@@ -104,8 +99,8 @@ public class ChatMsgController {
 
         ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.codeBlock.getCode());
         chatRecordMapper.save(chatRecord);
-        int recordId = chatRecord.getId();
 
+        int recordId = chatRecord.getId();
         String lang = codeBlockMsg.getLang();
         String code = codeBlockMsg.getCode();
         CodeMessage codeMessage = new CodeMessage(recordId, lang, code);
@@ -135,8 +130,8 @@ public class ChatMsgController {
         long chatId = chatDialog.getChatId();
         ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.media.getCode());
         chatRecordMapper.save(chatRecord);
-        int recordId = chatRecord.getId();
 
+        int recordId = chatRecord.getId();
         FileMessage fileMessage = new FileMessage(recordId, uploadId);
         fileMessageMapper.save(fileMessage);
 
@@ -164,8 +159,8 @@ public class ChatMsgController {
         long chatId = chatDialog.getChatId();
         ChatRecord chatRecord = new ChatRecord(chatId, chatType, userId, receiverId, MsgType.media.getCode());
         chatRecordMapper.save(chatRecord);
-        int recordId = chatRecord.getId();
 
+        int recordId = chatRecord.getId();
         FileMessage fileMessage = new FileMessage(recordId, uploadId);
         fileMessageMapper.save(fileMessage);
 

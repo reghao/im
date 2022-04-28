@@ -67,8 +67,9 @@ public class ChatController {
             ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
             if (chatDialog == null) {
                 Chat chat = new Chat(chatType);
-                int chatId = chatMapper.save(chat);
+                chatMapper.save(chat);
 
+                int chatId = chat.getId();
                 chatDialog = new ChatDialog(chatId, chatType, receiverId, userId);
                 ChatDialog chatDialog1 = new ChatDialog(chatId, chatType, userId, receiverId);
 

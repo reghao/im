@@ -10,6 +10,7 @@ import lombok.Getter;
  * @date 2022-04-21 09:32:00
  */
 @AllArgsConstructor
+@Deprecated
 public class PartUploadVo {
     private String uploadId;
     private boolean isMerge;

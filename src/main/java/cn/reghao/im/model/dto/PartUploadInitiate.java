@@ -12,6 +12,7 @@ import java.io.Serializable;
  */
 @Getter
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@Deprecated
 public class PartUploadInitiate implements Serializable {
     private static final long serialVersionUID = 1L;
 

@@ -54,8 +54,8 @@ public class GroupController {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         ChatGroup chatGroup = new ChatGroup(createGroup, userId);
         chatGroupMapper.save(chatGroup);
-        long groupId = chatGroup.getId();
 
+        long groupId = chatGroup.getId();
         Map<String, Long> map = new HashMap<>();
         map.put("group_id", groupId);
         return WebResult.success(map);
