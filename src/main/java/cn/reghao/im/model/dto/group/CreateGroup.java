@@ -1,4 +1,4 @@
-package cn.reghao.im.model.dto.contact;
+package cn.reghao.im.model.dto.group;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

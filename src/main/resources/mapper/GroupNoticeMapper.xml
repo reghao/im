@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.GroupNoticeMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into group_notice
+        (`id`,`deleted`,`create_time`,`update_time`,`notice_id`,`group_id`,`title`,`content`,`top`,`confirmed`,`created_by`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{noticeId},#{groupId},#{title},#{content},#{top},#{confirmed},#{createdBy})
+    </insert>
+
+    <update id="updateSetTop">
+        update group_notice set update_time=now(),top=#{top}
+        where id=#{noticeId}
+    </update>
+
+    <select id="findByNoticeId" resultType="cn.reghao.im.model.po.group.GroupNotice">
+        select * from group_notice where id=#{noticeId}
+    </select>
+    <select id="findByGroupId" resultType="cn.reghao.im.model.po.group.GroupNotice">
+        select * from group_notice where group_id=#{groupId}
+    </select>
+</mapper>

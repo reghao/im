@@ -2,19 +2,14 @@ package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.*;
 import cn.reghao.im.model.constant.MsgType;
-import cn.reghao.im.model.dto.chat.ChatDisturb;
-import cn.reghao.im.model.dto.chat.ChatInitial;
-import cn.reghao.im.model.dto.chat.ClearUnreadChat;
-import cn.reghao.im.model.dto.chat.GetChatRecord;
-import cn.reghao.im.model.dto.chat.ChatDialogVo;
-import cn.reghao.im.model.dto.chat.ChatRecordVo;
-import cn.reghao.im.model.dto.chat.ChatRecordList;
+import cn.reghao.im.model.dto.chat.*;
 import cn.reghao.im.model.dto.message.CodeBlockResult;
 import cn.reghao.im.model.dto.message.FileMsgResult;
 import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.im.model.po.chat.Chat;
 import cn.reghao.im.model.po.chat.ChatDialog;
 import cn.reghao.im.model.po.chat.ChatRecord;
+import cn.reghao.im.model.po.contact.ChatGroup;
 import cn.reghao.im.model.po.message.CodeMessage;
 import cn.reghao.im.model.po.message.FileMessage;
 import cn.reghao.im.model.po.message.TextMessage;
@@ -45,16 +40,19 @@ public class ChatController {
     private final ChatMapper chatMapper;
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
+    private final ChatGroupMapper chatGroupMapper;
     private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
     private final FileMessageMapper fileMessageMapper;
     private final CodeMessageMapper codeMessageMapper;
 
     public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
+                          ChatGroupMapper chatGroupMapper,
                           ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper,
                           FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper) {
         this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
+        this.chatGroupMapper = chatGroupMapper;
         this.userProfileMapper = userProfileMapper;
         this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
@@ -68,29 +66,43 @@ public class ChatController {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long receiverId = chatInitial.getReceiverId();
         int chatType = chatInitial.getTalkType();
-        if (chatType == 1) {
-            ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
-            if (chatDialog == null) {
-                Chat chat = new Chat(chatType);
-                chatMapper.save(chat);
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        if (chatDialog == null) {
+            Chat chat = new Chat(chatType);
+            chatMapper.save(chat);
 
-                int chatId = chat.getId();
-                chatDialog = new ChatDialog(chatId, chatType, receiverId, userId);
-                ChatDialog chatDialog1 = new ChatDialog(chatId, chatType, userId, receiverId);
-
-                chatDialogMapper.save(chatDialog);
-                chatDialogMapper.save(chatDialog1);
-                chatDialog.setId(chatId);
+            int chatId = chat.getId();
+            List<ChatDialog> list = new ArrayList<>();
+            if (chatType == 1) {
+                list.add(new ChatDialog(chatId, chatType, receiverId, userId));
+                list.add(new ChatDialog(chatId, chatType, userId, receiverId));
+                chatDialogMapper.saveAll(list);
+            } else {
+                List<Long> userIds = chatGroupMapper.findUserIdsByGroupId(receiverId);
+                list = userIds.stream()
+                        .map(memberId -> new ChatDialog(chatId, chatType, receiverId, memberId))
+                        .collect(Collectors.toList());
+                chatDialogMapper.saveAll(list);
             }
+            chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        }
 
+        String name;
+        String avatar;
+        if (chatType == 1) {
             UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
-            ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, userInfo.getNickname(), null, userInfo.getAvatar());
-            return WebResult.success(chatDialogVo);
+            name = userInfo.getNickname();
+            avatar = userInfo.getAvatar();
         } else if (chatType == 2) {
-            return WebResult.success("群组对话框待实现");
+            ChatGroup chatGroup = chatGroupMapper.findByGroupId(receiverId);
+            name = chatGroup.getName();
+            avatar = chatGroup.getAvatar();
         } else {
             return WebResult.failWithMsg("chatType 错误");
         }
+
+        ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, name, null, avatar);
+        return WebResult.success(chatDialogVo);
     }
 
     @ApiOperation(value = "获取与联系人的聊天记录")
@@ -161,23 +173,48 @@ public class ChatController {
         List<ChatDialog> list = chatDialogMapper.findByUserId(userId);
 
         List<ChatDialogVo> list1 = list.stream().map(chatDialog -> {
+            int chatType = chatDialog.getChatType();
             long receiverId = chatDialog.getReceiverId();
-            UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
-            return new ChatDialogVo(chatDialog, userInfo.getNickname(), "", userInfo.getAvatar());
+            String name;
+            String avatar;
+            if (chatType == 1) {
+                UserInfo userInfo = userProfileMapper.findUserInfoByUserId(receiverId);
+                name = userInfo.getNickname();
+                avatar = userInfo.getAvatar();
+            } else {
+                ChatGroup chatGroup = chatGroupMapper.findByGroupId(receiverId);
+                name = chatGroup.getName();
+                avatar = chatGroup.getAvatar();
+            }
+
+            return new ChatDialogVo(chatDialog, name, "", avatar);
         }).collect(Collectors.toList());
         return WebResult.success(list1);
     }
 
-    @ApiOperation(value = "窗口列表置顶/取消置顶")
+    @ApiOperation(value = "对话框置顶/取消置顶")
     @PostMapping(value = "/topping", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkTopping(@RequestParam("list_id") int listId, @RequestParam("type") int type) {
+    public String talkTopping(@RequestBody DialogTopping dialogTopping) {
         // type = 1 -> 置顶, type = 2 -> 取消置顶
+        int dialogId = dialogTopping.getListId();
+        int type = dialogTopping.getType();
+        if (type == 1) {
+            chatDialogMapper.updateSetTop(dialogId, true);
+        } else if (type == 2) {
+            chatDialogMapper.updateSetTop(dialogId, false);
+        }
         return WebResult.success();
     }
 
     @ApiOperation(value = "设置/取消聊天消息免打扰")
     @PostMapping(value = "/disturb", produces = MediaType.APPLICATION_JSON_VALUE)
     public String talkDisturb(@RequestBody ChatDisturb chatDisturb) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        int chatType = chatDisturb.getTalkType();
+        long receiverId = chatDisturb.getReceiverId();
+        ChatDialog chatDialog = chatDialogMapper.findChatDialog(chatType, receiverId, userId);
+        chatDialog.setDisturb(chatDisturb.isDisturb());
+        chatDialogMapper.updateSetDisturb(chatDialog);
         return WebResult.success();
     }
 

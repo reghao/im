@@ -12,6 +12,11 @@ import java.util.List;
  */
 @Mapper
 public interface ChatDialogMapper extends BaseMapper<ChatDialog> {
+    void updateSetDisturb(ChatDialog chatDialog);
+    void updateSetTop(int dialogId, boolean top);
+
+    @Deprecated
     ChatDialog findByReceiverAndUserId(long receiverId, long userId);
+    ChatDialog findChatDialog(int chatType, long receiverId, long userId);
     List<ChatDialog> findByUserId(long userId);
 }

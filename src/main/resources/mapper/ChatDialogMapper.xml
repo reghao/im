@@ -4,13 +4,34 @@
 <mapper namespace="cn.reghao.im.db.mapper.ChatDialogMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into chat_dialog
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`is_disturb`,`is_online`,`is_robot`,`is_top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`online`,`robot`,`top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{isDisturb},#{isOnline},#{isRobot},#{isTop},#{userId},#{unreadNum},#{lastSendUserId},#{updateAt},#{msgText})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{disturb},#{online},#{robot},#{top},#{userId},#{unreadNum},#{lastSendUserId},#{updateAt},#{msgText})
     </insert>
+    <insert id="saveAll" useGeneratedKeys="true" keyProperty="id">
+        insert into chat_dialog
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`online`,`robot`,`top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.deleted},#{item.createTime},#{item.updateTime},#{item.chatId},#{item.chatType},#{item.receiverId},#{item.disturb},#{item.online},#{item.robot},#{item.top},#{item.userId},#{item.unreadNum},#{item.lastSendUserId},#{item.updateAt},#{item.msgText})
+        </foreach>
+    </insert>
+
+    <update id="updateSetDisturb">
+        update chat_dialog set update_time=now(),disturb=#{disturb}
+        where id=#{id}
+    </update>
+    <update id="updateSetTop">
+        update chat_dialog set update_time=now(),top=#{top}
+        where id=#{dialogId}
+    </update>
 
     <select id="findByReceiverAndUserId" resultType="cn.reghao.im.model.po.chat.ChatDialog">
         select * from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}
+    </select>
+    <select id="findChatDialog" resultType="cn.reghao.im.model.po.chat.ChatDialog">
+        select * from chat_dialog
+        where chat_type=#{chatType} and receiver_id=#{receiverId} and user_id=#{userId}
     </select>
     <select id="findByUserId" resultType="cn.reghao.im.model.po.chat.ChatDialog">
         select * from chat_dialog where user_id=#{userId}

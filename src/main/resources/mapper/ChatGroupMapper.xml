@@ -9,7 +9,13 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{groupId},#{name},#{avatar},#{profile},#{ownerId})
     </insert>
 
-    <select id="findByChatId" resultType="cn.reghao.im.model.po.contact.ChatGroup">
+    <select id="findByGroupId" resultType="cn.reghao.im.model.po.contact.ChatGroup">
         select * from chat_group where id=#{groupId}
+    </select>
+    <select id="findByGroupIds" resultType="cn.reghao.im.model.po.contact.ChatGroup">
+        select * from chat_group where id in (select group_id from chat_group_member where user_id=#{userId})
+    </select>
+    <select id="findUserIdsByGroupId" resultType="java.lang.Long">
+        select user_id from chat_group_member where group_id=#{groupId}
     </select>
 </mapper>

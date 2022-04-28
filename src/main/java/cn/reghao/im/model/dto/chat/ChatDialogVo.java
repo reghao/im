@@ -31,7 +31,7 @@ public class ChatDialogVo {
         this.isOnline = chatDialog.isOnline();
         this.isRobot = chatDialog.isRobot();
         this.isTop = chatDialog.isTop();
-        this.talkType = 1;
+        this.talkType = chatDialog.getChatType();
         this.unreadNum = chatDialog.getUnreadNum();
 
         this.receiverId = chatDialog.getReceiverId();
