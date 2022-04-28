@@ -11,13 +11,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  */
 @Configuration
 public class WebConfig extends WebMvcConfigurationSupport {
-    private final String baseDir = "/home/reghao/opt/file/group0/";
-
     @Override
-    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String resourceLocation = String.format("file:%s/", baseDir);
-        String pathPattern = "/group0/node0/**";
-        registry.addResourceHandler(pathPattern).addResourceLocations(resourceLocation);
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 
     @Override
