@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ChatGroup extends BaseObject<Integer> {
+public class GroupInfo extends BaseObject<Integer> {
     private long groupId;
     private String name;
     private String avatar;
@@ -23,7 +23,7 @@ public class ChatGroup extends BaseObject<Integer> {
     private long ownerId;
     private List<Long> memberIds;
 
-    public ChatGroup(CreateGroup createGroup, long userId) {
+    public GroupInfo(CreateGroup createGroup, long userId) {
         this.name = createGroup.getName();
         this.avatar = createGroup.getAvatar();
         this.profile = createGroup.getProfile();

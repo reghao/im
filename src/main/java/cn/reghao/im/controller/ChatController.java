@@ -8,7 +8,7 @@ import cn.reghao.im.model.dto.message.FileMsgResult;
 import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.im.model.po.chat.ChatDialog;
 import cn.reghao.im.model.po.chat.ChatRecord;
-import cn.reghao.im.model.po.group.ChatGroup;
+import cn.reghao.im.model.po.group.GroupInfo;
 import cn.reghao.im.model.po.message.CodeMessage;
 import cn.reghao.im.model.po.message.FileMessage;
 import cn.reghao.im.model.po.message.TextMessage;
@@ -39,7 +39,7 @@ public class ChatController {
 
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
-    private final ChatGroupMapper chatGroupMapper;
+    private final GroupInfoMapper groupInfoMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
@@ -48,11 +48,11 @@ public class ChatController {
     private SnowFlake snowFlake;
 
     public ChatController(ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
-                          ChatGroupMapper chatGroupMapper, GroupMemberMapper groupMemberMapper,
+                          GroupInfoMapper groupInfoMapper, GroupMemberMapper groupMemberMapper,
                           ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper,
                           FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper) {
         this.chatDialogMapper = chatDialogMapper;
-        this.chatGroupMapper = chatGroupMapper;
+        this.groupInfoMapper = groupInfoMapper;
         this.groupMemberMapper = groupMemberMapper;
         this.userProfileMapper = userProfileMapper;
         this.chatRecordMapper = chatRecordMapper;
@@ -93,9 +93,9 @@ public class ChatController {
             name = userInfo.getNickname();
             avatar = userInfo.getAvatar();
         } else if (chatType == 2) {
-            ChatGroup chatGroup = chatGroupMapper.findByGroupId(receiverId);
-            name = chatGroup.getName();
-            avatar = chatGroup.getAvatar();
+            GroupInfo groupInfo = groupInfoMapper.findByGroupId(receiverId);
+            name = groupInfo.getName();
+            avatar = groupInfo.getAvatar();
         } else {
             return WebResult.failWithMsg("chatType 错误");
         }
@@ -182,9 +182,9 @@ public class ChatController {
                 name = userInfo.getNickname();
                 avatar = userInfo.getAvatar();
             } else {
-                ChatGroup chatGroup = chatGroupMapper.findByGroupId(receiverId);
-                name = chatGroup.getName();
-                avatar = chatGroup.getAvatar();
+                GroupInfo groupInfo = groupInfoMapper.findByGroupId(receiverId);
+                name = groupInfo.getName();
+                avatar = groupInfo.getAvatar();
             }
 
             return new ChatInitialRet(chatDialog, name, "", avatar);

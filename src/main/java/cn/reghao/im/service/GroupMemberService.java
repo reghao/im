@@ -1,20 +1,18 @@
 package cn.reghao.im.service;
 
 import cn.reghao.im.db.mapper.ChatDialogMapper;
-import cn.reghao.im.db.mapper.ChatGroupMapper;
+import cn.reghao.im.db.mapper.GroupInfoMapper;
 import cn.reghao.im.db.mapper.GroupMemberMapper;
 import cn.reghao.im.db.mapper.UserContactMapper;
 import cn.reghao.im.model.dto.contact.ContactInfo;
 import cn.reghao.im.model.dto.group.*;
-import cn.reghao.im.model.po.group.ChatGroup;
+import cn.reghao.im.model.po.group.GroupInfo;
 import cn.reghao.im.model.po.group.GroupMember;
 import cn.reghao.im.util.Jwt;
-import cn.reghao.im.util.WebResult;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -24,21 +22,21 @@ import java.util.stream.Collectors;
 @Service
 public class GroupMemberService {
     private final GroupMemberMapper groupMemberMapper;
-    private final ChatGroupMapper chatGroupMapper;
+    private final GroupInfoMapper groupInfoMapper;
     private final UserContactMapper userContactMapper;
     private final ChatDialogMapper chatDialogMapper;
 
-    public GroupMemberService(GroupMemberMapper groupMemberMapper, ChatGroupMapper chatGroupMapper,
+    public GroupMemberService(GroupMemberMapper groupMemberMapper, GroupInfoMapper groupInfoMapper,
                               UserContactMapper userContactMapper, ChatDialogMapper chatDialogMapper) {
         this.groupMemberMapper = groupMemberMapper;
-        this.chatGroupMapper = chatGroupMapper;
+        this.groupInfoMapper = groupInfoMapper;
         this.userContactMapper = userContactMapper;
         this.chatDialogMapper = chatDialogMapper;
     }
 
     public GroupInfoRetList getGroups() {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        List<GroupInfoRet> rows = chatGroupMapper.findGroupsByUserId(userId);
+        List<GroupInfoRet> rows = groupInfoMapper.findGroupsByUserId(userId);
         rows.forEach(groupInfoRet -> {
             if (groupInfoRet.isOwner()) {
                 groupInfoRet.setLeader(2);
@@ -105,8 +103,8 @@ public class GroupMemberService {
     public void leaveGroup(SecedeGroup secedeGroup) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long groupId = secedeGroup.getGroupId();
-        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
-        long ownerId = chatGroup.getOwnerId();
+        GroupInfo groupInfo = groupInfoMapper.findByGroupId(groupId);
+        long ownerId = groupInfo.getOwnerId();
         if (userId == ownerId) {
             // TODO 群主请先解散群
             return;
@@ -119,8 +117,8 @@ public class GroupMemberService {
     public void removeMembers(RemoveMember removeMember) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long groupId = removeMember.getGroupId();
-        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
-        long ownerId = chatGroup.getOwnerId();
+        GroupInfo groupInfo = groupInfoMapper.findByGroupId(groupId);
+        long ownerId = groupInfo.getOwnerId();
         if (userId != ownerId) {
             // TODO 没有权限, 只有群主才能移除群成员
             return;

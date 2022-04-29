@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.reghao.im.db.mapper.ChatGroupMapper">
+<mapper namespace="cn.reghao.im.db.mapper.GroupInfoMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
-        insert into chat_group
+        insert into group_info
         (`id`,`deleted`,`create_time`,`update_time`,`group_id`,`name`,`avatar`,`profile`,`owner_id`)
         values 
         (#{id},#{deleted},#{createTime},#{updateTime},#{groupId},#{name},#{avatar},#{profile},#{ownerId})
     </insert>
 
-    <update id="updateChatGroup">
-        update chat_group set update_time=now(),name=#{name},avatar=#{avatar},profile=#{profile}
+    <update id="updateGroupInfo">
+        update group_info set update_time=now(),name=#{name},avatar=#{avatar},profile=#{profile}
         where group_id=#{groupId}
     </update>
 
-    <select id="findByGroupId" resultType="cn.reghao.im.model.po.group.ChatGroup">
-        select * from chat_group where id=#{groupId}
+    <select id="findByGroupId" resultType="cn.reghao.im.model.po.group.GroupInfo">
+        select * from group_info where id=#{groupId}
     </select>
     <select id="findDetailByGroupId" resultType="cn.reghao.im.model.dto.group.GroupDetailRet">
-        select chatGroup.id as groupId,chatGroup.name as groupName,chatGroup.avatar,chatGroup.profile,
-        chatGroup.owner_id as ownerId,date_format(chatGroup.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        select groupInfo.id as groupId,groupInfo.name as groupName,groupInfo.avatar,groupInfo.profile,
+        groupInfo.owner_id as ownerId,date_format(groupInfo.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
         userProfile.nickname as managerNickname
-        from chat_group chatGroup
+        from group_info groupInfo
         inner join user_profile userProfile
-        where chatGroup.owner_id=userProfile.user_id and chatGroup.id=#{groupId}
+        where groupInfo.owner_id=userProfile.user_id and groupInfo.id=#{groupId}
     </select>
     <select id="findGroupsByUserId" resultType="cn.reghao.im.model.dto.group.GroupInfoRet">
-        select chatGroup.id,chatGroup.name as groupName,chatGroup.profile as groupProfile,chatGroup.avatar,
+        select groupInfo.id,groupInfo.name as groupName,groupInfo.profile as groupProfile,groupInfo.avatar,
         groupMember.owner,groupMember.disturb
-        from chat_group chatGroup
+        from group_info groupInfo
         inner join group_member groupMember
-        on chatGroup.id=groupMember.group_id and groupMember.user_id=#{userId}
+        on groupInfo.id=groupMember.group_id and groupMember.user_id=#{userId}
     </select>
 </mapper>

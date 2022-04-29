@@ -1,13 +1,12 @@
 package cn.reghao.im.service;
 
-import cn.reghao.im.db.mapper.ChatGroupMapper;
+import cn.reghao.im.db.mapper.GroupInfoMapper;
 import cn.reghao.im.db.mapper.GroupMemberMapper;
 import cn.reghao.im.db.mapper.GroupNoticeMapper;
 import cn.reghao.im.model.dto.group.*;
-import cn.reghao.im.model.po.group.ChatGroup;
+import cn.reghao.im.model.po.group.GroupInfo;
 import cn.reghao.im.model.po.group.GroupMember;
 import cn.reghao.im.util.Jwt;
-import cn.reghao.im.util.WebResult;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -20,23 +19,23 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ChatGroupService {
-    private final ChatGroupMapper chatGroupMapper;
+    private final GroupInfoMapper groupInfoMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final GroupNoticeMapper groupNoticeMapper;
 
-    public ChatGroupService(ChatGroupMapper chatGroupMapper, GroupMemberMapper groupMemberMapper,
+    public ChatGroupService(GroupInfoMapper groupInfoMapper, GroupMemberMapper groupMemberMapper,
                             GroupNoticeMapper groupNoticeMapper) {
-        this.chatGroupMapper = chatGroupMapper;
+        this.groupInfoMapper = groupInfoMapper;
         this.groupMemberMapper = groupMemberMapper;
         this.groupNoticeMapper = groupNoticeMapper;
     }
 
     public CreateGroupRet createGroup(CreateGroup createGroup) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        ChatGroup chatGroup = new ChatGroup(createGroup, userId);
-        chatGroupMapper.save(chatGroup);
+        GroupInfo groupInfo = new GroupInfo(createGroup, userId);
+        groupInfoMapper.save(groupInfo);
 
-        long groupId = chatGroup.getId();
+        long groupId = groupInfo.getId();
         List<GroupMember> list = Arrays.stream(createGroup.getIds().split(","))
                 .map(memberId -> new GroupMember(groupId, Long.valueOf(memberId)))
                 .collect(Collectors.toList());
@@ -53,7 +52,7 @@ public class ChatGroupService {
             return null;
         }
 
-        GroupDetailRet groupDetailRet = chatGroupMapper.findDetailByGroupId(groupId);
+        GroupDetailRet groupDetailRet = groupInfoMapper.findDetailByGroupId(groupId);
         groupDetailRet.setVisitCard(groupMember.getNickname());
         long ownerId = groupDetailRet.getOwnerId();
         if (ownerId == userId) {
@@ -68,17 +67,17 @@ public class ChatGroupService {
     public void editGroupDetail(GroupSetting groupSetting) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         int groupId = groupSetting.getGroupId();
-        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
-        long ownerId = chatGroup.getOwnerId();
+        GroupInfo groupInfo = groupInfoMapper.findByGroupId(groupId);
+        long ownerId = groupInfo.getOwnerId();
         if (userId != ownerId) {
             // TODO 只有群主才可以修改群信息
             return;
         }
 
-        chatGroup.setName(groupSetting.getGroupName());
-        chatGroup.setProfile(groupSetting.getProfile());
-        chatGroup.setAvatar(groupSetting.getAvatar());
-        chatGroupMapper.updateChatGroup(chatGroup);
+        groupInfo.setName(groupSetting.getGroupName());
+        groupInfo.setProfile(groupSetting.getProfile());
+        groupInfo.setAvatar(groupSetting.getAvatar());
+        groupInfoMapper.updateGroupInfo(groupInfo);
     }
 
     public void deleteGroup(long groupId) {
