@@ -26,4 +26,11 @@
         inner join user_profile userProfile
         on userContact.friend_id=userProfile.user_id and userProfile.online=1 and userContact.user_id=#{userId}
     </select>
+    <select id="findFriendsByNotInGroup" resultType="cn.reghao.im.model.dto.contact.ContactInfo">
+        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        from user_contact contact
+        inner join user_profile userProfile
+        on contact.friend_id=userProfile.user_id and contact.user_id=#{userId} and contact.friend_id not in
+        (select user_id from group_member where group_id=#{groupId} and user_id!=#{userId})
+    </select>
 </mapper>

@@ -14,6 +14,7 @@ import java.util.List;
 public interface ChatDialogMapper extends BaseMapper<ChatDialog> {
     void updateSetDisturb(int dialogId, boolean disturb);
     void updateSetTop(int dialogId, boolean top);
+    void deleteGroupChatDialog(long groupId, List<Long> list);
 
     @Deprecated
     ChatDialog findByReceiverAndUserId(long receiverId, long userId);

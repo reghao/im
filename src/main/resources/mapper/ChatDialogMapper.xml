@@ -26,6 +26,14 @@
         where id=#{dialogId}
     </update>
 
+    <delete id="deleteGroupChatDialog">
+        delete from chat_dialog
+        where receiver_id=#{groupId} and user_id in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
     <select id="findByReceiverAndUserId" resultType="cn.reghao.im.model.po.chat.ChatDialog">
         select * from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}
     </select>

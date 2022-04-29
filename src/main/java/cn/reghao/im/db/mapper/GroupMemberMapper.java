@@ -14,6 +14,7 @@ import java.util.List;
 @Mapper
 public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     void updateSetMemberRemark(long groupId, long userId, String nickname);
+    void deleteGroupMembers(long groupId, List<Long> list);
 
     GroupMember findByGroupAndUserId(long groupId, long userId);
     List<Long> findUserIdsByGroupId(long groupId);

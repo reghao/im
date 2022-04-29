@@ -1,15 +1,21 @@
 package cn.reghao.im.service;
 
+import cn.reghao.im.db.mapper.ChatDialogMapper;
 import cn.reghao.im.db.mapper.ChatGroupMapper;
 import cn.reghao.im.db.mapper.GroupMemberMapper;
-import cn.reghao.im.model.dto.group.GroupInfoRet;
-import cn.reghao.im.model.dto.group.GroupInfoRetList;
-import cn.reghao.im.model.dto.group.GroupMemberRet;
-import cn.reghao.im.model.dto.group.MemberRemark;
+import cn.reghao.im.db.mapper.UserContactMapper;
+import cn.reghao.im.model.dto.contact.ContactInfo;
+import cn.reghao.im.model.dto.group.*;
+import cn.reghao.im.model.po.group.ChatGroup;
+import cn.reghao.im.model.po.group.GroupMember;
 import cn.reghao.im.util.Jwt;
+import cn.reghao.im.util.WebResult;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author reghao
@@ -19,10 +25,15 @@ import java.util.List;
 public class GroupMemberService {
     private final GroupMemberMapper groupMemberMapper;
     private final ChatGroupMapper chatGroupMapper;
+    private final UserContactMapper userContactMapper;
+    private final ChatDialogMapper chatDialogMapper;
 
-    public GroupMemberService(GroupMemberMapper groupMemberMapper, ChatGroupMapper chatGroupMapper) {
+    public GroupMemberService(GroupMemberMapper groupMemberMapper, ChatGroupMapper chatGroupMapper,
+                              UserContactMapper userContactMapper, ChatDialogMapper chatDialogMapper) {
         this.groupMemberMapper = groupMemberMapper;
         this.chatGroupMapper = chatGroupMapper;
+        this.userContactMapper = userContactMapper;
+        this.chatDialogMapper = chatDialogMapper;
     }
 
     public GroupInfoRetList getGroups() {
@@ -64,12 +75,61 @@ public class GroupMemberService {
         groupMemberMapper.updateSetMemberRemark(groupId, userId, remarkName);
     }
 
-    public void leaveGroup(long groupId) {
+    public List<ContactInfo> getInvitedUsers(long groupId) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        List<ContactInfo> list;
+        if (groupId == 0) {
+            list = userContactMapper.findByUserId(userId);
+        } else {
+            list = userContactMapper.findFriendsByNotInGroup(userId, groupId);
+        }
+
+        return list;
     }
 
-    public void addMember(long groupId, List<Long> memberIds) {
+    public void inviteUsers(GroupInvite groupInvite) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long groupId = groupInvite.getGroupId();
+        GroupMember groupMember = groupMemberMapper.findByGroupAndUserId(groupId, userId);
+        if (groupMember == null) {
+            // TODO 非本群用户不能邀请其他用户进群
+            return;
+        }
+
+        List<GroupMember> list = Arrays.stream(groupInvite.getIds().split(","))
+                .map(memberId -> new GroupMember(groupId, Long.valueOf(memberId)))
+                .collect(Collectors.toList());
+        groupMemberMapper.saveAll(list);
     }
 
-    public void removeMember(long groupId, List<Long> memberIds) {
+    public void leaveGroup(SecedeGroup secedeGroup) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long groupId = secedeGroup.getGroupId();
+        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
+        long ownerId = chatGroup.getOwnerId();
+        if (userId == ownerId) {
+            // TODO 群主请先解散群
+            return;
+        }
+
+        groupMemberMapper.deleteGroupMembers(groupId, List.of(userId));
+        chatDialogMapper.deleteGroupChatDialog(groupId, List.of(userId));
+    }
+
+    public void removeMembers(RemoveMember removeMember) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long groupId = removeMember.getGroupId();
+        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
+        long ownerId = chatGroup.getOwnerId();
+        if (userId != ownerId) {
+            // TODO 没有权限, 只有群主才能移除群成员
+            return;
+        }
+
+        List<Long> userIds = Arrays.stream(removeMember.getMembersIds().split(","))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        groupMemberMapper.deleteGroupMembers(groupId, userIds);
+        chatDialogMapper.deleteGroupChatDialog(groupId, userIds);
     }
 }

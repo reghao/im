@@ -16,4 +16,5 @@ public interface UserContactMapper extends BaseMapper<UserContact> {
     List<Long> getOnlineFriends(long userId);
     List<ContactInfo> findByUserId(long userId);
     ContactInfo findByUserIdAndFriendId(long userId, long friendId);
+    List<ContactInfo> findFriendsByNotInGroup(long userId, long groupId);
 }

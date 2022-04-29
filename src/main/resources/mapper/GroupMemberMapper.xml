@@ -22,6 +22,14 @@
         where group_id=#{groupId} and user_id=#{userId}
     </update>
 
+    <delete id="deleteGroupMembers">
+        delete from group_member
+        where group_id=#{groupId} and user_id in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
     <select id="findUserIdsByGroupId" resultType="java.lang.Long">
         select user_id from group_member where group_id=#{groupId}
     </select>

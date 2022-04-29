@@ -1,21 +1,16 @@
 package cn.reghao.im.controller;
 
-import cn.reghao.im.db.mapper.*;
 import cn.reghao.im.model.dto.contact.*;
 import cn.reghao.im.model.dto.group.*;
-import cn.reghao.im.model.po.group.ChatGroup;
-import cn.reghao.im.model.po.group.GroupMember;
 import cn.reghao.im.service.ChatGroupService;
 import cn.reghao.im.service.GroupMemberService;
 import cn.reghao.im.service.GroupNoticeService;
-import cn.reghao.im.util.Jwt;
 import cn.reghao.im.util.WebResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author reghao
@@ -24,20 +19,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/group")
 public class GroupController {
-    private final UserContactMapper userContactMapper;
-    private final ChatGroupMapper chatGroupMapper;
-    private final GroupMemberMapper groupMemberMapper;
     private final ChatGroupService chatGroupService;
     private final GroupMemberService groupMemberService;
     private final GroupNoticeService groupNoticeService;
 
-    public GroupController(UserContactMapper userContactMapper, ChatGroupMapper chatGroupMapper,
-                           GroupMemberMapper groupMemberMapper,
-                           ChatGroupService chatGroupService, GroupMemberService groupMemberService,
+    public GroupController(ChatGroupService chatGroupService, GroupMemberService groupMemberService,
                            GroupNoticeService groupNoticeService) {
-        this.userContactMapper = userContactMapper;
-        this.chatGroupMapper = chatGroupMapper;
-        this.groupMemberMapper = groupMemberMapper;
         this.chatGroupService = chatGroupService;
         this.groupMemberService = groupMemberService;
         this.groupNoticeService = groupNoticeService;
@@ -85,45 +72,31 @@ public class GroupController {
         return WebResult.success(memberList);
     }
 
-    @ApiOperation(value = "(群成员)邀请用户入群")
-    @PostMapping(value = "/invite", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupInvite(@RequestBody GroupInvite groupInvite) {
-        long groupId = groupInvite.getGroupId();
-        List<GroupMember> list = Arrays.stream(groupInvite.getIds().split(","))
-                .map(memberId -> new GroupMember(groupId, Long.valueOf(memberId)))
-                .collect(Collectors.toList());
-        groupMemberMapper.saveAll(list);
-        return WebResult.success();
+    @ApiOperation(value = "获取需要邀请入群的用户")
+    @GetMapping(value = "/member/invites", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String groupMemberInvites(@RequestParam("group_id") long groupId) {
+        List<ContactInfo> list = groupMemberService.getInvitedUsers(groupId);
+        return WebResult.success(list);
     }
 
-    @ApiOperation(value = "(群主)移除群成员")
-    @PostMapping(value = "/member/remove", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupMemberRemove(@RequestBody RemoveMember removeMember) {
-        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        long groupId = removeMember.getGroupId();
-        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
-        long ownerId = chatGroup.getOwnerId();
-        if (userId != ownerId) {
-            return WebResult.failWithMsg("没有权限");
-        }
-
-        List<Long> userIds = Arrays.stream(removeMember.getMembersIds().split(","))
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
+    @ApiOperation(value = "邀请用户进群")
+    @PostMapping(value = "/invite", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String groupInvite(@RequestBody GroupInvite groupInvite) {
+        groupMemberService.inviteUsers(groupInvite);
         return WebResult.success();
     }
 
     @ApiOperation(value = "(群成员)退出群组")
     @PostMapping(value = "/secede", produces = MediaType.APPLICATION_JSON_VALUE)
     public String groupSecede(@RequestBody SecedeGroup secedeGroup) {
-        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        long groupId = secedeGroup.getGroupId();
-        ChatGroup chatGroup = chatGroupMapper.findByGroupId(groupId);
-        long ownerId = chatGroup.getOwnerId();
-        if (userId == ownerId) {
-            return WebResult.failWithMsg("群主请先解散群");
-        }
+        groupMemberService.leaveGroup(secedeGroup);
+        return WebResult.success();
+    }
 
+    @ApiOperation(value = "(群主)移除群成员")
+    @PostMapping(value = "/member/remove", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String groupMemberRemove(@RequestBody RemoveMember removeMember) {
+        groupMemberService.removeMembers(removeMember);
         return WebResult.success();
     }
 
@@ -132,16 +105,6 @@ public class GroupController {
     public String groupMemberRemark(@RequestBody MemberRemark memberRemark) {
         groupMemberService.setNicknameInGroup(memberRemark);
         return WebResult.success();
-    }
-
-    @GetMapping(value = "/member/invites", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupMemberInvites(@RequestParam("group_id") long groupId) {
-        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-        if (groupId != 0) {
-        }
-
-        List<ContactInfo> list = userContactMapper.findByUserId(userId);
-        return WebResult.success(list);
     }
 
     @ApiOperation(value = "群公告")
