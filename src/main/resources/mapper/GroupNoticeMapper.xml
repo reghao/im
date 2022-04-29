@@ -4,20 +4,36 @@
 <mapper namespace="cn.reghao.im.db.mapper.GroupNoticeMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into group_notice
-        (`id`,`deleted`,`create_time`,`update_time`,`notice_id`,`group_id`,`title`,`content`,`top`,`confirmed`,`created_by`)
+        (`id`,`deleted`,`create_time`,`update_time`,`notice_id`,`group_id`,`title`,`content`,`top`,`confirmed`,`create_by`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{noticeId},#{groupId},#{title},#{content},#{top},#{confirmed},#{createdBy})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{noticeId},#{groupId},#{title},#{content},#{top},#{confirmed},#{createBy})
     </insert>
 
-    <update id="updateSetTop">
-        update group_notice set update_time=now(),top=#{top}
+    <update id="updateSetNotice">
+        update group_notice set update_time=now(),title=#{title},content=#{content}
         where id=#{noticeId}
     </update>
 
     <select id="findByNoticeId" resultType="cn.reghao.im.model.po.group.GroupNotice">
         select * from group_notice where id=#{noticeId}
     </select>
-    <select id="findByGroupId" resultType="cn.reghao.im.model.po.group.GroupNotice">
-        select * from group_notice where group_id=#{groupId}
+    <select id="findByGroupId" resultType="cn.reghao.im.model.dto.group.NoticeRet">
+        select groupNotice.id,groupNotice.title,groupNotice.content,groupNotice.confirmed as isConfirm,groupNotice.top as isTop,
+        date_format(groupNotice.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        date_format(groupNotice.update_time,'%Y-%m-%d %H:%i:%s') as updatedAt,
+        userProfile.user_id as userId,userProfile.nickname,userProfile.avatar
+        from group_notice groupNotice
+        inner join user_profile userProfile
+        on groupNotice.create_by=userProfile.user_id and groupNotice.group_id=#{groupId}
+    </select>
+    <select id="findByLatest" resultType="cn.reghao.im.model.dto.group.NoticeRet">
+        select groupNotice.id,groupNotice.title,groupNotice.content,groupNotice.confirmed as isConfirm,groupNotice.top as isTop,
+        date_format(groupNotice.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        date_format(groupNotice.update_time,'%Y-%m-%d %H:%i:%s') as updatedAt,
+        userProfile.user_id as userId,userProfile.nickname,userProfile.avatar
+        from group_notice groupNotice
+        inner join user_profile userProfile
+        on groupNotice.create_by=userProfile.user_id and groupNotice.group_id=#{groupId}
+        order by groupNotice.create_time desc limit 1
     </select>
 </mapper>

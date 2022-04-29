@@ -18,7 +18,7 @@ public class GroupNotice extends BaseObject<Integer> {
     private String content;
     private Boolean top;
     private Boolean confirmed;
-    private Long createdBy;
+    private Long createBy;
 
     public GroupNotice(EditGroupNotice editGroupNotice, long userId) {
         this.noticeId = editGroupNotice.getNoticeId();
@@ -27,6 +27,6 @@ public class GroupNotice extends BaseObject<Integer> {
         this.content = editGroupNotice.getContent();
         this.top = editGroupNotice.isTop();
         this.confirmed = editGroupNotice.isConfirm();
-        this.createdBy = userId;
+        this.createBy = userId;
     }
 }

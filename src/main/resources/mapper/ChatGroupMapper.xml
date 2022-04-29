@@ -9,13 +9,27 @@
         (#{id},#{deleted},#{createTime},#{updateTime},#{groupId},#{name},#{avatar},#{profile},#{ownerId})
     </insert>
 
-    <select id="findByGroupId" resultType="cn.reghao.im.model.po.contact.ChatGroup">
+    <update id="updateChatGroup">
+        update chat_group set update_time=now(),name=#{name},avatar=#{avatar},profile=#{profile}
+        where group_id=#{groupId}
+    </update>
+
+    <select id="findByGroupId" resultType="cn.reghao.im.model.po.group.ChatGroup">
         select * from chat_group where id=#{groupId}
     </select>
-    <select id="findByGroupIds" resultType="cn.reghao.im.model.po.contact.ChatGroup">
-        select * from chat_group where id in (select group_id from chat_group_member where user_id=#{userId})
+    <select id="findDetailByGroupId" resultType="cn.reghao.im.model.dto.group.GroupDetailRet">
+        select chatGroup.id as groupId,chatGroup.name as groupName,chatGroup.avatar,chatGroup.profile,
+        chatGroup.owner_id as ownerId,date_format(chatGroup.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        userProfile.nickname as managerNickname
+        from chat_group chatGroup
+        inner join user_profile userProfile
+        where chatGroup.owner_id=userProfile.user_id and chatGroup.id=#{groupId}
     </select>
-    <select id="findUserIdsByGroupId" resultType="java.lang.Long">
-        select user_id from chat_group_member where group_id=#{groupId}
+    <select id="findGroupsByUserId" resultType="cn.reghao.im.model.dto.group.GroupInfoRet">
+        select chatGroup.id,chatGroup.name as groupName,chatGroup.profile as groupProfile,chatGroup.avatar,
+        groupMember.owner,groupMember.disturb
+        from chat_group chatGroup
+        inner join group_member groupMember
+        on chatGroup.id=groupMember.group_id and groupMember.user_id=#{userId}
     </select>
 </mapper>

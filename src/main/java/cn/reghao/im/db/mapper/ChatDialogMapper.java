@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Mapper
 public interface ChatDialogMapper extends BaseMapper<ChatDialog> {
-    void updateSetDisturb(ChatDialog chatDialog);
+    void updateSetDisturb(int dialogId, boolean disturb);
     void updateSetTop(int dialogId, boolean top);
 
     @Deprecated

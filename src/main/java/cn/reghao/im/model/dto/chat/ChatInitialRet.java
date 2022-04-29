@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2022-04-16 20:48:06
  */
 @Data
-public class ChatDialogVo {
+public class ChatInitialRet {
     private long id;
     private boolean isDisturb;
     private boolean isOnline;
@@ -25,10 +25,10 @@ public class ChatDialogVo {
     private String updatedAt;
     private String msgText;
 
-    public ChatDialogVo(ChatDialog chatDialog, String name, String remarkName, String avatar) {
+    public ChatInitialRet(ChatDialog chatDialog, String name, String remarkName, String avatar) {
         this.id = chatDialog.getId();
         this.isDisturb = chatDialog.isDisturb();
-        this.isOnline = chatDialog.isOnline();
+        this.isOnline = true;
         this.isRobot = chatDialog.isRobot();
         this.isTop = chatDialog.isTop();
         this.talkType = chatDialog.getChatType();
@@ -38,7 +38,7 @@ public class ChatDialogVo {
         this.name = name;
         this.remarkName = remarkName;
         this.avatar = avatar;
-        this.updatedAt = DateTimeConverter.format(chatDialog.getUpdateAt());
-        this.msgText = chatDialog.getMsgText();
+        this.updatedAt = DateTimeConverter.format(System.currentTimeMillis());
+        this.msgText = "test";
     }
 }

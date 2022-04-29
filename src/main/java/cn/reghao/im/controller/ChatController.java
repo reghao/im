@@ -6,16 +6,16 @@ import cn.reghao.im.model.dto.chat.*;
 import cn.reghao.im.model.dto.message.CodeBlockResult;
 import cn.reghao.im.model.dto.message.FileMsgResult;
 import cn.reghao.im.model.dto.user.UserInfo;
-import cn.reghao.im.model.po.chat.Chat;
 import cn.reghao.im.model.po.chat.ChatDialog;
 import cn.reghao.im.model.po.chat.ChatRecord;
-import cn.reghao.im.model.po.contact.ChatGroup;
+import cn.reghao.im.model.po.group.ChatGroup;
 import cn.reghao.im.model.po.message.CodeMessage;
 import cn.reghao.im.model.po.message.FileMessage;
 import cn.reghao.im.model.po.message.TextMessage;
 import cn.reghao.im.util.WebResult;
 import cn.reghao.im.util.Jwt;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
+import cn.reghao.jutil.tool.id.SnowFlake;
 import cn.reghao.tnb.file.api.dto.FileInfoDto;
 import cn.reghao.tnb.file.api.iface.FileInfoService;
 import io.swagger.annotations.ApiOperation;
@@ -37,27 +37,29 @@ public class ChatController {
     @DubboReference(check = false)
     private FileInfoService fileInfoService;
 
-    private final ChatMapper chatMapper;
     private final ChatDialogMapper chatDialogMapper;
     private final UserProfileMapper userProfileMapper;
     private final ChatGroupMapper chatGroupMapper;
+    private final GroupMemberMapper groupMemberMapper;
     private final ChatRecordMapper chatRecordMapper;
     private final TextMessageMapper textMessageMapper;
     private final FileMessageMapper fileMessageMapper;
     private final CodeMessageMapper codeMessageMapper;
+    private SnowFlake snowFlake;
 
-    public ChatController(ChatMapper chatMapper, ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
-                          ChatGroupMapper chatGroupMapper,
+    public ChatController(ChatDialogMapper chatDialogMapper, UserProfileMapper userProfileMapper,
+                          ChatGroupMapper chatGroupMapper, GroupMemberMapper groupMemberMapper,
                           ChatRecordMapper chatRecordMapper, TextMessageMapper textMessageMapper,
                           FileMessageMapper fileMessageMapper, CodeMessageMapper codeMessageMapper) {
-        this.chatMapper = chatMapper;
         this.chatDialogMapper = chatDialogMapper;
         this.chatGroupMapper = chatGroupMapper;
+        this.groupMemberMapper = groupMemberMapper;
         this.userProfileMapper = userProfileMapper;
         this.chatRecordMapper = chatRecordMapper;
         this.textMessageMapper = textMessageMapper;
         this.fileMessageMapper = fileMessageMapper;
         this.codeMessageMapper = codeMessageMapper;
+        this.snowFlake = new SnowFlake(1L, 1L);
     }
 
     @ApiOperation(value = "创建聊天窗口")
@@ -68,17 +70,14 @@ public class ChatController {
         int chatType = chatInitial.getTalkType();
         ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
         if (chatDialog == null) {
-            Chat chat = new Chat(chatType);
-            chatMapper.save(chat);
-
-            int chatId = chat.getId();
+            long chatId = snowFlake.nextId();
             List<ChatDialog> list = new ArrayList<>();
             if (chatType == 1) {
                 list.add(new ChatDialog(chatId, chatType, receiverId, userId));
                 list.add(new ChatDialog(chatId, chatType, userId, receiverId));
                 chatDialogMapper.saveAll(list);
             } else {
-                List<Long> userIds = chatGroupMapper.findUserIdsByGroupId(receiverId);
+                List<Long> userIds = groupMemberMapper.findUserIdsByGroupId(receiverId);
                 list = userIds.stream()
                         .map(memberId -> new ChatDialog(chatId, chatType, receiverId, memberId))
                         .collect(Collectors.toList());
@@ -101,8 +100,8 @@ public class ChatController {
             return WebResult.failWithMsg("chatType 错误");
         }
 
-        ChatDialogVo chatDialogVo = new ChatDialogVo(chatDialog, name, null, avatar);
-        return WebResult.success(chatDialogVo);
+        ChatInitialRet chatInitialRet = new ChatInitialRet(chatDialog, name, null, avatar);
+        return WebResult.success(chatInitialRet);
     }
 
     @ApiOperation(value = "获取与联系人的聊天记录")
@@ -162,7 +161,8 @@ public class ChatController {
 
     @ApiOperation(value = "删除聊天窗口")
     @PostMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkDelete(@RequestParam("list_id") int listId) {
+    public String talkDelete(@RequestBody DialogDelete dialogDelete) {
+        long dialogId = dialogDelete.getListId();
         return WebResult.success();
     }
 
@@ -172,7 +172,7 @@ public class ChatController {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         List<ChatDialog> list = chatDialogMapper.findByUserId(userId);
 
-        List<ChatDialogVo> list1 = list.stream().map(chatDialog -> {
+        List<ChatInitialRet> list1 = list.stream().map(chatDialog -> {
             int chatType = chatDialog.getChatType();
             long receiverId = chatDialog.getReceiverId();
             String name;
@@ -187,7 +187,7 @@ public class ChatController {
                 avatar = chatGroup.getAvatar();
             }
 
-            return new ChatDialogVo(chatDialog, name, "", avatar);
+            return new ChatInitialRet(chatDialog, name, "", avatar);
         }).collect(Collectors.toList());
         return WebResult.success(list1);
     }
@@ -213,8 +213,7 @@ public class ChatController {
         int chatType = chatDisturb.getTalkType();
         long receiverId = chatDisturb.getReceiverId();
         ChatDialog chatDialog = chatDialogMapper.findChatDialog(chatType, receiverId, userId);
-        chatDialog.setDisturb(chatDisturb.isDisturb());
-        chatDialogMapper.updateSetDisturb(chatDialog);
+        chatDialogMapper.updateSetDisturb(chatDialog.getId(), chatDisturb.isDisturb());
         return WebResult.success();
     }
 

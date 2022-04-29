@@ -1,4 +1,4 @@
-package cn.reghao.im.model.po.contact;
+package cn.reghao.im.model.po.group;
 
 import cn.reghao.im.model.dto.group.CreateGroup;
 import cn.reghao.jutil.jdk.db.BaseObject;

@@ -27,7 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/contact")
 public class ContactController {
-    private UserAccountMapper userAccountMapper;
+    private final UserAccountMapper userAccountMapper;
     private final UserProfileMapper userProfileMapper;
     private final UserContactMapper userContactMapper;
     private final UserContactRecordMapper userContactRecordMapper;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.reghao.im.db.mapper.GroupMemberMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        insert into group_member
+        (`id`,`deleted`,`create_time`,`update_time`,`group_id`,`user_id`,`nickname`,`owner`,`disturb`)
+        values 
+        (#{id},#{deleted},#{createTime},#{updateTime},#{groupId},#{userId},#{nickname},#{owner},#{disturb})
+    </insert>
+    <insert id="saveAll" useGeneratedKeys="true" keyProperty="id">
+        insert ignore into group_member
+        (`id`,`deleted`,`create_time`,`update_time`,`group_id`,`user_id`,`nickname`,`owner`,`disturb`)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id},#{item.deleted},#{item.createTime},#{item.updateTime},#{item.groupId},#{item.userId},#{item.nickname},#{item.owner},#{item.disturb})
+        </foreach>
+    </insert>
+
+    <select id="findUserIdsByGroupId" resultType="java.lang.Long">
+        select user_id from group_member where group_id=#{groupId}
+    </select>
+    <select id="findByGroupAndUserId" resultType="cn.reghao.im.model.po.group.GroupMember">
+        select * from group_member where group_id=#{groupId} and user_id=#{userId}
+    </select>
+</mapper>

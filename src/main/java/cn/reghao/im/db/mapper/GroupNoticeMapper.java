@@ -1,5 +1,6 @@
 package cn.reghao.im.db.mapper;
 
+import cn.reghao.im.model.dto.group.NoticeRet;
 import cn.reghao.im.model.po.group.GroupNotice;
 import cn.reghao.jutil.jdk.db.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,5 +16,6 @@ public interface GroupNoticeMapper extends BaseMapper<GroupNotice> {
     void updateSetNotice(GroupNotice groupNotice);
 
     GroupNotice findByNoticeId(int noticeId);
-    List<GroupNotice> findByGroupId(int groupId);
+    List<NoticeRet> findByGroupId(long groupId);
+    NoticeRet findByLatest(long groupId);
 }

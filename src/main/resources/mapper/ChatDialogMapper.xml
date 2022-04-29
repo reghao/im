@@ -4,22 +4,22 @@
 <mapper namespace="cn.reghao.im.db.mapper.ChatDialogMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into chat_dialog
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`online`,`robot`,`top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`robot`,`top`,`user_id`,`unread_num`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{disturb},#{online},#{robot},#{top},#{userId},#{unreadNum},#{lastSendUserId},#{updateAt},#{msgText})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{receiverId},#{disturb},#{robot},#{top},#{userId},#{unreadNum})
     </insert>
     <insert id="saveAll" useGeneratedKeys="true" keyProperty="id">
         insert into chat_dialog
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`online`,`robot`,`top`,`user_id`,`unread_num`,`last_send_user_id`,`update_at`,`msg_text`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`receiver_id`,`disturb`,`robot`,`top`,`user_id`,`unread_num`)
         values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.id},#{item.deleted},#{item.createTime},#{item.updateTime},#{item.chatId},#{item.chatType},#{item.receiverId},#{item.disturb},#{item.online},#{item.robot},#{item.top},#{item.userId},#{item.unreadNum},#{item.lastSendUserId},#{item.updateAt},#{item.msgText})
+            (#{item.id},#{item.deleted},#{item.createTime},#{item.updateTime},#{item.chatId},#{item.chatType},#{item.receiverId},#{item.disturb},#{item.robot},#{item.top},#{item.userId},#{item.unreadNum})
         </foreach>
     </insert>
 
     <update id="updateSetDisturb">
         update chat_dialog set update_time=now(),disturb=#{disturb}
-        where id=#{id}
+        where id=#{dialogId}
     </update>
     <update id="updateSetTop">
         update chat_dialog set update_time=now(),top=#{top}
