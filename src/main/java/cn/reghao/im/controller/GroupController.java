@@ -2,7 +2,7 @@ package cn.reghao.im.controller;
 
 import cn.reghao.im.model.dto.contact.*;
 import cn.reghao.im.model.dto.group.*;
-import cn.reghao.im.service.ChatGroupService;
+import cn.reghao.im.service.GroupInfoService;
 import cn.reghao.im.service.GroupMemberService;
 import cn.reghao.im.service.GroupNoticeService;
 import cn.reghao.im.util.WebResult;
@@ -19,13 +19,13 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1/group")
 public class GroupController {
-    private final ChatGroupService chatGroupService;
+    private final GroupInfoService groupInfoService;
     private final GroupMemberService groupMemberService;
     private final GroupNoticeService groupNoticeService;
 
-    public GroupController(ChatGroupService chatGroupService, GroupMemberService groupMemberService,
+    public GroupController(GroupInfoService groupInfoService, GroupMemberService groupMemberService,
                            GroupNoticeService groupNoticeService) {
-        this.chatGroupService = chatGroupService;
+        this.groupInfoService = groupInfoService;
         this.groupMemberService = groupMemberService;
         this.groupNoticeService = groupNoticeService;
     }
@@ -33,21 +33,21 @@ public class GroupController {
     @ApiOperation(value = "创建群组")
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public String groupCreate(@RequestBody CreateGroup createGroup) {
-        CreateGroupRet createGroupRet = chatGroupService.createGroup(createGroup);
+        CreateGroupRet createGroupRet = groupInfoService.createGroup(createGroup);
         return WebResult.success(createGroupRet);
     }
 
     @ApiOperation(value = "群组详细信息")
     @GetMapping(value = "/detail", produces = MediaType.APPLICATION_JSON_VALUE)
     public String groupDetail(@RequestParam("group_id") int groupId) {
-        GroupDetailRet groupDetailRet = chatGroupService.getGroupDetail(groupId);
+        GroupDetailRet groupDetailRet = groupInfoService.getGroupDetail(groupId);
         return WebResult.success(groupDetailRet);
     }
 
     @ApiOperation(value = "群组信息设置")
     @PostMapping(value = "/setting", produces = MediaType.APPLICATION_JSON_VALUE)
     public String groupSetting(@RequestBody GroupSetting groupSetting) {
-        chatGroupService.editGroupDetail(groupSetting);
+        groupInfoService.editGroupDetail(groupSetting);
         return WebResult.success();
     }
 

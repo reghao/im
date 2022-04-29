@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
  * @date 2022-04-29 11:18:27
  */
 @Service
-public class ChatGroupService {
+public class GroupInfoService {
     private final GroupInfoMapper groupInfoMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final GroupNoticeMapper groupNoticeMapper;
 
-    public ChatGroupService(GroupInfoMapper groupInfoMapper, GroupMemberMapper groupMemberMapper,
+    public GroupInfoService(GroupInfoMapper groupInfoMapper, GroupMemberMapper groupMemberMapper,
                             GroupNoticeMapper groupNoticeMapper) {
         this.groupInfoMapper = groupInfoMapper;
         this.groupMemberMapper = groupMemberMapper;
