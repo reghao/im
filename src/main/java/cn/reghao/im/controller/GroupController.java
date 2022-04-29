@@ -5,7 +5,6 @@ import cn.reghao.im.model.dto.contact.*;
 import cn.reghao.im.model.dto.group.*;
 import cn.reghao.im.model.po.group.ChatGroup;
 import cn.reghao.im.model.po.group.GroupMember;
-import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.im.service.ChatGroupService;
 import cn.reghao.im.service.GroupMemberService;
 import cn.reghao.im.service.GroupNoticeService;
@@ -28,22 +27,17 @@ public class GroupController {
     private final UserContactMapper userContactMapper;
     private final ChatGroupMapper chatGroupMapper;
     private final GroupMemberMapper groupMemberMapper;
-    private final GroupNoticeMapper groupNoticeMapper;
-    private final UserProfileMapper userProfileMapper;
-    private ChatGroupService chatGroupService;
-    private GroupMemberService groupMemberService;
-    private GroupNoticeService groupNoticeService;
+    private final ChatGroupService chatGroupService;
+    private final GroupMemberService groupMemberService;
+    private final GroupNoticeService groupNoticeService;
 
     public GroupController(UserContactMapper userContactMapper, ChatGroupMapper chatGroupMapper,
-                           GroupMemberMapper groupMemberMapper, GroupNoticeMapper groupNoticeMapper,
-                           UserProfileMapper userProfileMapper,
+                           GroupMemberMapper groupMemberMapper,
                            ChatGroupService chatGroupService, GroupMemberService groupMemberService,
                            GroupNoticeService groupNoticeService) {
         this.userContactMapper = userContactMapper;
         this.chatGroupMapper = chatGroupMapper;
         this.groupMemberMapper = groupMemberMapper;
-        this.groupNoticeMapper = groupNoticeMapper;
-        this.userProfileMapper = userProfileMapper;
         this.chatGroupService = chatGroupService;
         this.groupMemberService = groupMemberService;
         this.groupNoticeService = groupNoticeService;
@@ -82,6 +76,13 @@ public class GroupController {
     public String groupList() {
         GroupInfoRetList groupInfoRetList = groupMemberService.getGroups();
         return WebResult.success(groupInfoRetList);
+    }
+
+    @ApiOperation(value = "群成员")
+    @GetMapping(value = "/member/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String groupMemberList(@RequestParam("group_id") long groupId) {
+        List<GroupMemberRet> memberList = groupMemberService.getGroupMember(groupId);
+        return WebResult.success(memberList);
     }
 
     @ApiOperation(value = "(群成员)邀请用户入群")
@@ -128,7 +129,8 @@ public class GroupController {
 
     @ApiOperation(value = "修改群组内显示的昵称")
     @PostMapping(value = "/member/remark", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupMemberRemark() {
+    public String groupMemberRemark(@RequestBody MemberRemark memberRemark) {
+        groupMemberService.setNicknameInGroup(memberRemark);
         return WebResult.success();
     }
 
@@ -140,18 +142,6 @@ public class GroupController {
 
         List<ContactInfo> list = userContactMapper.findByUserId(userId);
         return WebResult.success(list);
-    }
-
-    @ApiOperation(value = "群成员")
-    @GetMapping(value = "/member/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String groupMemberList(@RequestParam("group_id") int groupId) {
-        List<Long> userIds = groupMemberMapper.findUserIdsByGroupId(groupId);
-        List<GroupMemberInfo> memberList = userIds.stream().map(memberId -> {
-            UserInfo userInfo = userProfileMapper.findUserInfoByUserId(memberId);
-            return new GroupMemberInfo(userInfo);
-        }).collect(Collectors.toList());
-
-        return WebResult.success(memberList);
     }
 
     @ApiOperation(value = "群公告")

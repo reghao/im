@@ -4,12 +4,12 @@ import cn.reghao.im.db.mapper.ChatGroupMapper;
 import cn.reghao.im.db.mapper.GroupMemberMapper;
 import cn.reghao.im.model.dto.group.GroupInfoRet;
 import cn.reghao.im.model.dto.group.GroupInfoRetList;
-import cn.reghao.im.model.po.group.ChatGroup;
+import cn.reghao.im.model.dto.group.GroupMemberRet;
+import cn.reghao.im.model.dto.group.MemberRemark;
 import cn.reghao.im.util.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author reghao
@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class GroupMemberService {
-    private GroupMemberMapper groupMemberMapper;
-    private ChatGroupMapper chatGroupMapper;
+    private final GroupMemberMapper groupMemberMapper;
+    private final ChatGroupMapper chatGroupMapper;
 
     public GroupMemberService(GroupMemberMapper groupMemberMapper, ChatGroupMapper chatGroupMapper) {
         this.groupMemberMapper = groupMemberMapper;
@@ -45,7 +45,23 @@ public class GroupMemberService {
         return new GroupInfoRetList(rows);
     }
 
-    public void setNicknameInGroup(long groupId) {
+    public List<GroupMemberRet> getGroupMember(long groupId) {
+        List<GroupMemberRet> memberList = groupMemberMapper.findByGroupId(groupId);
+        memberList.forEach(groupMemberRet -> {
+            if (groupMemberRet.isOwner()) {
+                groupMemberRet.setLeader(2);
+            } else {
+                groupMemberRet.setLeader(0);
+            }
+        });
+        return memberList;
+    }
+
+    public void setNicknameInGroup(MemberRemark memberRemark) {
+        long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
+        long groupId = memberRemark.getGroupId();
+        String remarkName = memberRemark.getVisitCard();
+        groupMemberMapper.updateSetMemberRemark(groupId, userId, remarkName);
     }
 
     public void leaveGroup(long groupId) {
