@@ -1,8 +1,7 @@
 package cn.reghao.im.model.dto.chat;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 
@@ -10,13 +9,14 @@ import java.io.Serializable;
  * @author reghao
  * @date 2022-04-16 22:34:59
  */
-@Data
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@Getter
+@Setter
 public class ChatRecordGet implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private Long recordId;
-    private Long receiverId;
-    private Integer talkType;
+    private Long record_id;
+    private Long receiver_id;
+    private Integer talk_type;
+    private Integer msg_type;
     private Integer limit;
 }

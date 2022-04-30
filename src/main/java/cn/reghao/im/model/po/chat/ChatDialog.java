@@ -25,14 +25,14 @@ public class ChatDialog extends BaseObject<Integer> {
     private long userId;
     private int unreadNum;
 
-    public ChatDialog(long chatId, int chatType, long receiverId, long userId) {
+    public ChatDialog(long chatId, int chatType, long receiverId, long userId, boolean display) {
         this.chatId = chatId;
         this.chatType = chatType;
         this.receiverId = receiverId;
         this.disturb = false;
         this.robot = false;
         this.top = false;
-        this.display = true;
+        this.display = display;
         this.userId = userId;
         this.unreadNum = 0;
     }

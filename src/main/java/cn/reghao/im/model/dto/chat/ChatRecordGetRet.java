@@ -40,11 +40,11 @@ public class ChatRecordGetRet {
         this.userId = userInfo.getUid();
         this.receiverId = chatRecord.getReceiverId();
         this.msgType = chatRecord.getMsgType();
-        this.isMark = chatRecord.isMark();
+        this.isMark = false;
         this.isRead = chatRecord.isRead();
         this.isRevoke = chatRecord.isRevoke();
         this.nickname = userInfo.getNickname();
         this.avatar = userInfo.getAvatar();
-        this.createdAt = DateTimeConverter.format(chatRecord.getCreateAt());
+        this.createdAt = DateTimeConverter.format(chatRecord.getCreateTime());
     }
 }

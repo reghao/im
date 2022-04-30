@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.reghao.im.db.mapper.CodeMessageMapper">
+<mapper namespace="cn.reghao.im.db.mapper.CodeBlockMessageMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
-        insert into code_message
+        insert into code_block_message
         (`id`,`deleted`,`create_time`,`update_time`,`record_id`,`lang`,`code`)
         values 
         (#{id},#{deleted},#{createTime},#{updateTime},#{recordId},#{lang},#{code})
     </insert>
 
-    <select id="findByRecordId" resultType="cn.reghao.im.model.po.message.CodeMessage">
-        select * from code_message where record_id=#{recordId}
+    <select id="findByRecordId" resultType="cn.reghao.im.model.po.message.CodeBlockMessage">
+        select * from code_block_message where record_id=#{recordId}
     </select>
 </mapper>

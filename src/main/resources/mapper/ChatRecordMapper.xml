@@ -4,15 +4,38 @@
 <mapper namespace="cn.reghao.im.db.mapper.ChatRecordMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         insert into chat_record
-        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`sender_id`,`receiver_id`,`msg_type`,`is_mark`,`is_read`,`is_revoke`,`create_at`)
+        (`id`,`deleted`,`create_time`,`update_time`,`chat_id`,`chat_type`,`sender_id`,`receiver_id`,`msg_type`,`read`,`revoke`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{senderId},#{receiverId},#{msgType},#{isMark},#{isRead},#{isRevoke},#{createAt})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{chatId},#{chatType},#{senderId},#{receiverId},#{msgType},#{read},#{revoke})
     </insert>
 
     <update id="updateSetRevoke">
         update chat_record set is_revoke=1 where id=#{recordId}
     </update>
 
+    <select id="findChatRecordGetRet" resultType="cn.reghao.im.model.dto.chat.ChatRecordGetRet">
+        select chatRecord.id, chatRecord.chat_type as talkType,chatRecord.receiver_id,chatRecord.read as isRead,chatRecord.revoke as isRevoke,
+        chatRecord.msg_type,date_format(chatRecord.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        userProfile.user_id,userProfile.nickname,userProfile.avatar
+        from chat_record chatRecord
+        inner join user_profile userProfile
+        on chatRecord.sender_id=userProfile.user_id <!--and chatRecord.revoke is false-->
+        and chatRecord.chat_id=(select chat_id from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}) and chatRecord.id > #{lastRecordId}
+        order by chatRecord.create_time desc
+        limit #{limit}
+    </select>
+    <select id="findChatRecordGetRetByMsgType" resultType="cn.reghao.im.model.dto.chat.ChatRecordGetRet">
+        select chatRecord.id, chatRecord.chat_type as talkType,chatRecord.receiver_id,chatRecord.read as isRead,chatRecord.revoke as isRevoke,
+        chatRecord.msg_type,date_format(chatRecord.create_time,'%Y-%m-%d %H:%i:%s') as createdAt,
+        userProfile.user_id,userProfile.nickname,userProfile.avatar
+        from chat_record chatRecord
+        inner join user_profile userProfile
+        on chatRecord.sender_id=userProfile.user_id <!--and chatRecord.revoke is false-->
+        and chatRecord.msg_type=#{msgType}
+        and chatRecord.chat_id=(select chat_id from chat_dialog where receiver_id=#{receiverId} and user_id=#{userId}) and chatRecord.id > #{lastRecordId}
+        order by chatRecord.create_time desc
+        limit #{limit}
+    </select>
     <select id="findByChatId" resultType="cn.reghao.im.model.po.chat.ChatRecord">
         select * from chat_record
         where chat_id=#{chatId} and id>#{lastRecordId}

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class CodeMessage extends BaseObject<Integer> {
+public class CodeBlockMessage extends BaseObject<Integer> {
     private long recordId;
     private String lang;
     private String code;

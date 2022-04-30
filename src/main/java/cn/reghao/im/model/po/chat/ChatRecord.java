@@ -19,10 +19,8 @@ public class ChatRecord extends BaseObject<Integer> {
     private long senderId;
     private long receiverId;
     private int msgType;
-    private boolean isMark;
-    private boolean isRead;
-    private boolean isRevoke;
-    private LocalDateTime createAt;
+    private boolean read;
+    private boolean revoke;
 
     public ChatRecord(long chatId, int chatType, long senderId, long receiverId, int msgType) {
         this.chatId = chatId;
@@ -30,9 +28,7 @@ public class ChatRecord extends BaseObject<Integer> {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.msgType = msgType;
-        this.isMark = false;
-        this.isRead = false;
-        this.isRevoke = false;
-        this.createAt = LocalDateTime.now();
+        this.read = false;
+        this.revoke = false;
     }
 }

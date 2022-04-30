@@ -1,4 +1,4 @@
-package cn.reghao.im.model.dto.message;
+package cn.reghao.im.model.dto.chat;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class DeleteMsg {
+public class ChatRecordDelete {
     private int talkType;
     private int receiverId;
     private String recordId;

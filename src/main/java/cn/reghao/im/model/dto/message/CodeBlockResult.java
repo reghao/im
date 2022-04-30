@@ -1,6 +1,6 @@
 package cn.reghao.im.model.dto.message;
 
-import cn.reghao.im.model.po.message.CodeMessage;
+import cn.reghao.im.model.po.message.CodeBlockMessage;
 import cn.reghao.jutil.jdk.converter.DateTimeConverter;
 
 /**
@@ -15,12 +15,12 @@ public class CodeBlockResult {
     private String code;
     private String ceatedAt;
 
-    public CodeBlockResult(CodeMessage codeMessage, long senderId) {
-        this.id = codeMessage.getId();
+    public CodeBlockResult(CodeBlockMessage codeBlockMessage, long senderId) {
+        this.id = codeBlockMessage.getId();
         this.userId = senderId;
-        this.recordId = codeMessage.getRecordId();
-        this.lang = codeMessage.getLang();
-        this.code = codeMessage.getCode();
-        this.ceatedAt = DateTimeConverter.format(codeMessage.getCreateTime());
+        this.recordId = codeBlockMessage.getRecordId();
+        this.lang = codeBlockMessage.getLang();
+        this.code = codeBlockMessage.getCode();
+        this.ceatedAt = DateTimeConverter.format(codeBlockMessage.getCreateTime());
     }
 }

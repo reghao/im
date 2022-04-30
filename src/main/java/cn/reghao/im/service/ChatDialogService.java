@@ -4,6 +4,7 @@ import cn.reghao.im.db.mapper.ChatDialogMapper;
 import cn.reghao.im.db.mapper.ChatRecordMapper;
 import cn.reghao.im.db.mapper.GroupInfoMapper;
 import cn.reghao.im.db.mapper.UserProfileMapper;
+import cn.reghao.im.model.constant.ChatType;
 import cn.reghao.im.model.dto.chat.*;
 import cn.reghao.im.model.po.chat.ChatDialog;
 import cn.reghao.im.util.Jwt;
@@ -38,11 +39,11 @@ public class ChatDialogService {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
         long receiverId = chatInitial.getReceiverId();
         int chatType = chatInitial.getTalkType();
-        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
-        if (chatDialog == null) {
-            long chatId = snowFlake.nextId();
-            chatDialog = new ChatDialog(chatId, chatType, receiverId, userId);
-            chatDialogMapper.save(chatDialog);
+        ChatDialog chatDialog;
+        if (chatType == 1) {
+            chatDialog = p2pChatDialog(receiverId, userId);
+        } else {
+            chatDialog = groupChatDialog(receiverId, userId);
         }
 
         if (!chatDialog.isDisplay()) {
@@ -51,6 +52,30 @@ public class ChatDialogService {
 
         ChatUserInfo chatUserInfo = getDialogUserInfo(userId, chatType, receiverId);
         return new ChatInitialRet(chatDialog, chatUserInfo);
+    }
+
+    private ChatDialog groupChatDialog(long receiverId, long userId) {
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        if (chatDialog == null) {
+            long chatId = snowFlake.nextId();
+            chatDialog = new ChatDialog(chatId, ChatType.single.getCode(), receiverId, userId, true);
+            chatDialogMapper.save(chatDialog);
+        }
+
+        return chatDialog;
+    }
+
+    private ChatDialog p2pChatDialog(long receiverId, long userId) {
+        ChatDialog chatDialog = chatDialogMapper.findByReceiverAndUserId(receiverId, userId);
+        if (chatDialog == null) {
+            long chatId = snowFlake.nextId();
+            chatDialog = new ChatDialog(chatId, ChatType.single.getCode(), receiverId, userId, true);
+            ChatDialog chatDialog1 = new ChatDialog(chatId, ChatType.single.getCode(), userId, receiverId, false);
+            // TODO 保证批量操作全部成功 or 全部失败
+            chatDialogMapper.saveAll(List.of(chatDialog, chatDialog1));
+        }
+
+        return chatDialog;
     }
 
     private ChatUserInfo getDialogUserInfo(long userId, int chatType, long receiverId) {
@@ -99,6 +124,5 @@ public class ChatDialogService {
 
     public void clearUnread(long receiverId) {
         long userId = Long.parseLong(Jwt.getUserInfo().getUserId());
-
     }
 }
