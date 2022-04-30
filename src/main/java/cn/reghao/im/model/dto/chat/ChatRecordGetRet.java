@@ -16,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ChatRecordVo {
+public class ChatRecordGetRet {
     private int id;
     private int talkType;
     private long receiverId;
@@ -34,7 +34,7 @@ public class ChatRecordVo {
     private String nickname;
     private String avatar;
 
-    public ChatRecordVo(ChatRecord chatRecord, UserInfo userInfo) {
+    public ChatRecordGetRet(ChatRecord chatRecord, UserInfo userInfo) {
         this.id = chatRecord.getId();
         this.talkType = chatRecord.getChatType();
         this.userId = userInfo.getUid();

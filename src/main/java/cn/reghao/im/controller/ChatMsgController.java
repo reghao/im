@@ -2,9 +2,9 @@ package cn.reghao.im.controller;
 
 import cn.reghao.im.db.mapper.*;
 import cn.reghao.im.model.constant.MsgType;
-import cn.reghao.im.model.dto.chat.RevokeRecord;
+import cn.reghao.im.model.dto.chat.ChatRecordRevoke;
 import cn.reghao.im.model.dto.message.*;
-import cn.reghao.im.model.dto.chat.ChatRecordVo;
+import cn.reghao.im.model.dto.chat.ChatRecordGetRet;
 import cn.reghao.im.model.dto.message.CodeBlockResult;
 import cn.reghao.im.model.dto.message.FileMsgResult;
 import cn.reghao.im.model.dto.message.VoteMsgResult;
@@ -81,11 +81,11 @@ public class ChatMsgController {
         textMessageMapper.save(textMessage);
 
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
-        chatRecordVo.setContent(textMessage.getContent());
+        ChatRecordGetRet chatRecordGetRet = new ChatRecordGetRet(chatRecord, userInfo);
+        chatRecordGetRet.setContent(textMessage.getContent());
 
-        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        EvtTalkResp<ChatRecordGetRet> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordGetRet);
+        EventMessageResp<EvtTalkResp<ChatRecordGetRet>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
         eventDispatcher.sendMessage(receiverId, eventMessage);
         eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
@@ -112,11 +112,11 @@ public class ChatMsgController {
 
         CodeBlockResult codeBlockResult = new CodeBlockResult(codeMessage, userId);
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
-        chatRecordVo.setCodeBlock(codeBlockResult);
+        ChatRecordGetRet chatRecordGetRet = new ChatRecordGetRet(chatRecord, userInfo);
+        chatRecordGetRet.setCodeBlock(codeBlockResult);
 
-        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        EvtTalkResp<ChatRecordGetRet> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordGetRet);
+        EventMessageResp<EvtTalkResp<ChatRecordGetRet>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
         eventDispatcher.sendMessage(receiverId, eventMessage);
         eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
@@ -141,12 +141,12 @@ public class ChatMsgController {
 
         FileInfoDto fileInfoDto = fileInfoService.getFileInfo(uploadId);
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
+        ChatRecordGetRet chatRecordGetRet = new ChatRecordGetRet(chatRecord, userInfo);
         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
+        chatRecordGetRet.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
 
-        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        EvtTalkResp<ChatRecordGetRet> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordGetRet);
+        EventMessageResp<EvtTalkResp<ChatRecordGetRet>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
         eventDispatcher.sendMessage(receiverId, eventMessage);
         eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
@@ -170,12 +170,12 @@ public class ChatMsgController {
 
         FileInfoDto fileInfoDto = fileInfoService.getFileInfo(uploadId);
         UserInfo userInfo = userProfileMapper.findUserInfoByUserId(userId);
-        ChatRecordVo chatRecordVo = new ChatRecordVo(chatRecord, userInfo);
+        ChatRecordGetRet chatRecordGetRet = new ChatRecordGetRet(chatRecord, userInfo);
         String createAt = DateTimeConverter.format(chatRecord.getCreateAt());
-        chatRecordVo.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
+        chatRecordGetRet.setFile(new FileMsgResult(fileMessage, fileInfoDto, userId, createAt));
 
-        EvtTalkResp<ChatRecordVo> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordVo);
-        EventMessageResp<EvtTalkResp<ChatRecordVo>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
+        EvtTalkResp<ChatRecordGetRet> resp = new EvtTalkResp<>(chatType, userId, receiverId, chatRecordGetRet);
+        EventMessageResp<EvtTalkResp<ChatRecordGetRet>> eventMessage = new EventMessageResp<>(EventType.event_talk, resp);
         eventDispatcher.sendMessage(receiverId, eventMessage);
         eventDispatcher.sendMessage(userId, eventMessage);
         return WebResult.success();
@@ -195,15 +195,15 @@ public class ChatMsgController {
 
     @ApiOperation(value = "撤回消息")
     @PostMapping(value = "/message/revoke", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String talkMessageRevoke(@RequestBody RevokeRecord revokeRecord) throws IOException {
-        long recordId = revokeRecord.getRecordId();
+    public String talkMessageRevoke(@RequestBody ChatRecordRevoke chatRecordRevoke) throws IOException {
+        long recordId = chatRecordRevoke.getRecordId();
         chatRecordMapper.updateSetRevoke(recordId);
-        ChatRecord chatRecord = chatRecordMapper.findByRecordId(revokeRecord.getRecordId());
+        ChatRecord chatRecord = chatRecordMapper.findByRecordId(chatRecordRevoke.getRecordId());
         int chatType = chatRecord.getChatType();
         long senderId = chatRecord.getSenderId();
         long receiverId = chatRecord.getReceiverId();
 
-        EvtTalkRevokeResp resp = new EvtTalkRevokeResp(chatType, senderId, receiverId, revokeRecord.getRecordId());
+        EvtTalkRevokeResp resp = new EvtTalkRevokeResp(chatType, senderId, receiverId, chatRecordRevoke.getRecordId());
         EventMessageResp<EvtTalkRevokeResp> eventMessage = new EventMessageResp<>(EventType.event_talk_revoke, resp);
         eventDispatcher.sendMessage(receiverId, eventMessage);
         eventDispatcher.sendMessage(senderId, eventMessage);

@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class ChatDisturb {
-    private boolean isDisturb;
+    private int isDisturb;
     private int receiverId;
     private int talkType;
 }

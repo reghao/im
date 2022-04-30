@@ -13,10 +13,10 @@ import lombok.Setter;
 public class UserContact extends BaseObject<Integer> {
     private Long userId;
     private Long friendId;
-    private String nicknameRemark;
-    private int friendStatus;
+    private String remark;
+    private int status;
 
     public UserContact() {
-        this.friendStatus = 2;
+        this.status = 2;
     }
 }

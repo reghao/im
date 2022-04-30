@@ -1,5 +1,6 @@
 package cn.reghao.im.db.mapper;
 
+import cn.reghao.im.model.dto.chat.ChatUserInfo;
 import cn.reghao.im.model.dto.user.UserInfo;
 import cn.reghao.jutil.jdk.db.BaseMapper;
 import cn.reghao.im.model.po.UserProfile;
@@ -17,4 +18,5 @@ public interface UserProfileMapper extends BaseMapper<UserProfile> {
     UserProfile findByMobile(String mobile);
     UserProfile findByUserId(long userId);
     UserInfo findUserInfoByUserId(long userId);
+    ChatUserInfo findDialogFriendInfo(long userId, long friendId);
 }

@@ -4,19 +4,19 @@
 <mapper namespace="cn.reghao.im.db.mapper.UserContactMapper">
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into user_contact
-        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`friend_id`,`nickname_remark`,`friend_status`)
+        (`id`,`deleted`,`create_time`,`update_time`,`user_id`,`friend_id`,`remark`,`status`)
         values 
-        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{friendId},#{nicknameRemark},#{friendStatus})
+        (#{id},#{deleted},#{createTime},#{updateTime},#{userId},#{friendId},#{remark},#{status})
     </insert>
     
     <select id="findByUserId" resultType="cn.reghao.im.model.dto.contact.ContactInfo">
-        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        select contact.friend_id as id, userProfile.nickname,contact.remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
         inner join user_profile userProfile
         on contact.friend_id=userProfile.user_id and contact.user_id=#{userId}
     </select>
     <select id="findByUserIdAndFriendId" resultType="cn.reghao.im.model.dto.contact.ContactInfo">
-        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        select contact.friend_id as id, userProfile.nickname,contact.remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
         inner join user_profile userProfile
         on contact.friend_id=userProfile.user_id and contact.user_id=#{userId} and contact.friend_id=#{friendId}
@@ -27,7 +27,7 @@
         on userContact.friend_id=userProfile.user_id and userProfile.online=1 and userContact.user_id=#{userId}
     </select>
     <select id="findFriendsByNotInGroup" resultType="cn.reghao.im.model.dto.contact.ContactInfo">
-        select contact.friend_id as id, userProfile.nickname,contact.nickname_remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
+        select contact.friend_id as id, userProfile.nickname,contact.remark as friendRemark,userProfile.gender,userProfile.motto,userProfile.avatar
         from user_contact contact
         inner join user_profile userProfile
         on contact.friend_id=userProfile.user_id and contact.user_id=#{userId} and contact.friend_id not in

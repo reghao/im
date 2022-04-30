@@ -27,4 +27,11 @@
     <select id="findUserInfoByUserId" resultType="cn.reghao.im.model.dto.user.UserInfo">
         select user_id as uid,nickname,gender,motto,avatar from user_profile where user_id=#{userId}
     </select>
+    <select id="findDialogFriendInfo" resultType="cn.reghao.im.model.dto.chat.ChatUserInfo">
+        select userProfile.user_id as receiverId,userProfile.nickname as name,userProfile.avatar,
+        userProfile.online as isOnline,userContact.remark as remarkName
+        from user_profile userProfile
+        inner join user_contact userContact
+        on userProfile.user_id=userContact.friend_id and userContact.user_id=#{userId} and userProfile.user_id=#{friendId}
+    </select>
 </mapper>

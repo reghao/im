@@ -21,6 +21,7 @@ public class ChatDialog extends BaseObject<Integer> {
     private boolean disturb;
     private boolean robot;
     private boolean top;
+    private boolean display;
     private long userId;
     private int unreadNum;
 
@@ -31,6 +32,7 @@ public class ChatDialog extends BaseObject<Integer> {
         this.disturb = false;
         this.robot = false;
         this.top = false;
+        this.display = true;
         this.userId = userId;
         this.unreadNum = 0;
     }

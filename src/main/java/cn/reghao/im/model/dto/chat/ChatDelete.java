@@ -2,19 +2,14 @@ package cn.reghao.im.model.dto.chat;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Data;
-
-import java.io.Serializable;
+import lombok.Getter;
 
 /**
  * @author reghao
- * @date 2022-04-16 22:33:33
+ * @date 2022-04-29 11:05:10
  */
-@Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class ClearUnreadChat implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private long receiverId;
-    private int talkType;
+@Getter
+public class ChatDelete {
+    private int listId;
 }

@@ -1,5 +1,6 @@
 package cn.reghao.im.db.mapper;
 
+import cn.reghao.im.model.dto.chat.ChatUserInfo;
 import cn.reghao.im.model.dto.group.GroupDetailRet;
 import cn.reghao.im.model.dto.group.GroupInfoRet;
 import cn.reghao.im.model.po.group.GroupInfo;
@@ -19,4 +20,5 @@ public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
     GroupInfo findByGroupId(long groupId);
     GroupDetailRet findDetailByGroupId(long groupId);
     List<GroupInfoRet> findGroupsByUserId(long userId);
+    ChatUserInfo findDialogGroupInfo(long groupId);
 }

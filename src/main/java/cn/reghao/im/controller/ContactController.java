@@ -148,7 +148,7 @@ public class ContactController {
         UserContact userContact = new UserContact();
         userContact.setUserId(userId);
         userContact.setFriendId(requestUserId);
-        userContact.setNicknameRemark(nicknameRemark);
+        userContact.setRemark(nicknameRemark);
 
         UserContact userContact1 = new UserContact();
         userContact1.setUserId(requestUserId);

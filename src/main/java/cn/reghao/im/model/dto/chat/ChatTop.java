@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 
-import java.io.Serializable;
-
 /**
  * @author reghao
- * @date 2022-04-21 15:41:17
+ * @date 2022-04-28 19:02:59
  */
-@Getter
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class RevokeRecord implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private long recordId;
+@Getter
+public class ChatTop {
+    private int type;
+    private int listId;
 }

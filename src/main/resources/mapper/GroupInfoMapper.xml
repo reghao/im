@@ -32,4 +32,7 @@
         inner join group_member groupMember
         on groupInfo.id=groupMember.group_id and groupMember.user_id=#{userId}
     </select>
+    <select id="findDialogGroupInfo" resultType="cn.reghao.im.model.dto.chat.ChatUserInfo">
+        select group_id as receiverId,name,avatar from group_info where group_id=#{groupId}
+    </select>
 </mapper>
