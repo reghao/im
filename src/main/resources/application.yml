@@ -22,3 +22,19 @@ mybatis:
     map-underscore-to-camel-case: true
   mapper-locations: classpath*:mapper/**/**.xml
   type-aliases-package: cn.reghao.im.model.po
+management:
+  endpoint:
+    health:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: env,beans
+  metrics:
+    enable:
+      http: false
+      hikaricp: false
+    export:
+      prometheus:
+        enabled: true
